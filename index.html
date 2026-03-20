@@ -89,7 +89,7 @@
         </li>
     </ul>
 
-    <!-- Содержимое вкладок (полностью ваше, без изменений) -->
+    <!-- Содержимое вкладок (полностью ваше) -->
     <div class="tab-content" id="mainTabContent">
         <!-- ГЛАВНАЯ -->
         <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
@@ -216,7 +216,7 @@
     </div>
 </div>
 
-<!-- Модальное окно РЕГИСТРАЦИИ -->
+<!-- Модальное окно РЕГИСТРАЦИИ (убраны имя и фамилия) -->
 <div class="modal fade" id="registerModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -226,14 +226,6 @@
             </div>
             <div class="modal-body">
                 <form id="registerForm">
-                    <div class="mb-3">
-                        <label class="form-label">Имя *</label>
-                        <input type="text" class="form-control" id="registerFirstName" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Фамилия (необязательно)</label>
-                        <input type="text" class="form-control" id="registerLastName">
-                    </div>
                     <div class="mb-3">
                         <label class="form-label">Никнейм (будет отображаться) *</label>
                         <input type="text" class="form-control" id="registerNickname" required>
@@ -251,12 +243,13 @@
                     <button class="btn btn-success" id="registerBtn">Зарегистрироваться</button>
                 </div>
                 <div id="registerMessage" class="mt-3 small text-danger"></div>
+                <div id="registerSuccessMessage" class="mt-3 small text-success" style="display: none;">Регистрация успешна! Выполняется вход...</div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Модальное окно ПРОФИЛЯ -->
+<!-- Модальное окно ПРОФИЛЯ (только никнейм и email) -->
 <div class="modal fade" id="profileModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -270,20 +263,8 @@
                     <input type="email" class="form-control" id="profileEmail" readonly>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Имя</label>
-                    <input type="text" class="form-control" id="profileFirstName">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Фамилия</label>
-                    <input type="text" class="form-control" id="profileLastName">
-                </div>
-                <div class="mb-3">
                     <label class="form-label">Никнейм</label>
                     <input type="text" class="form-control" id="profileNickname">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Способ входа</label>
-                    <input type="text" class="form-control" id="profileProvider" readonly>
                 </div>
                 <div class="d-grid gap-2">
                     <button class="btn btn-primary" id="saveProfileBtn">Сохранить изменения</button>
@@ -294,7 +275,7 @@
     </div>
 </div>
 
-<!-- Остальные модальные окна (без изменений, они уже есть в вашем коде) -->
+<!-- Остальные модальные окна (без изменений) -->
 <!-- Редактирование авто -->
 <div class="modal fade" id="editCarModal" tabindex="-1">
     <div class="modal-dialog">
@@ -439,15 +420,15 @@
         enableIndexedDbPersistence 
     } from 'firebase/firestore';
 
-    // ⚠️ Данные ⚠️
+    // ⚠️ Ваши данные Firebase ⚠️
     const firebaseConfig = {
         apiKey: "AIzaSyAcYMr_VmmeZm0f_SJo4plm-wOAmhKuZpU",
         authDomain: "servicecarbook.firebaseapp.com",
         projectId: "servicecarbook",
         storageBucket: "servicecarbook.firebasestorage.app",
         messagingSenderId: "321524196690",
-        appId: "1:321524196690:web:4d3fe9df49b4ed2cc3068b",
-        // measurementId: "G-DMGBWSE38R"
+        appId: "1:321524196690:web:4d3fe9df49b4ed2cc3068b"
+        // measurementId: "G-DMGBWSE38R" // необязательно
     };
 
     const app = initializeApp(firebaseConfig);
@@ -458,7 +439,7 @@
 
     // ------------------- Состояние приложения -------------------
     let appState = {
-        profile: { firstName: '', lastName: '', nickname: '' },
+        profile: { nickname: '' },
         car: { makeModel: '', year: null, plate: '', vin: '', currentMileage: 0 },
         services: [],
         fuelings: [],
@@ -474,7 +455,7 @@
             try {
                 const parsed = JSON.parse(saved);
                 appState = { ...appState, ...parsed };
-                if (!appState.profile) appState.profile = { firstName: '', lastName: '', nickname: '' };
+                if (!appState.profile) appState.profile = { nickname: '' };
                 if (!appState.car) appState.car = { makeModel: '', year: null, plate: '', vin: '', currentMileage: 0 };
             } catch (e) {}
         }
@@ -495,7 +476,7 @@
                 appState = docSnap.data();
             } else {
                 appState = {
-                    profile: { firstName: '', lastName: '', nickname: '' },
+                    profile: { nickname: '' },
                     car: { makeModel: '', year: null, plate: '', vin: '', currentMileage: 0 },
                     services: [],
                     fuelings: [],
@@ -503,20 +484,20 @@
                 };
                 await setDoc(docRef, appState);
             }
-            // Дополним профиль из auth, если чего-то не хватает
-            if (!appState.profile) appState.profile = {};
-            if (auth.currentUser) {
-                const displayName = auth.currentUser.displayName || '';
-                const nameParts = displayName.split(' ');
-                if (!appState.profile.firstName && nameParts[0]) appState.profile.firstName = nameParts[0];
-                if (!appState.profile.lastName && nameParts.length > 1) appState.profile.lastName = nameParts.slice(1).join(' ');
-                if (!appState.profile.nickname) appState.profile.nickname = auth.currentUser.email.split('@')[0];
+            // Если профиль не содержит nickname, используем email
+            if (!appState.profile) appState.profile = { nickname: '' };
+            if (!appState.profile.nickname && auth.currentUser) {
+                appState.profile.nickname = auth.currentUser.email.split('@')[0];
             }
         } catch (error) {
             console.error('Ошибка загрузки из Firestore:', error);
             loadFromLocalStorage();
         }
         isLoadingFromFirestore = false;
+        // После загрузки обновим отображаемое имя
+        if (currentUser) {
+            document.getElementById('userDisplayName').textContent = appState.profile?.nickname || currentUser.email.split('@')[0];
+        }
         updateUI();
     }
 
@@ -600,7 +581,7 @@
         if (document.getElementById('stats').classList.contains('active')) updateCharts();
     }
 
-    // Рендеры списков (без изменений, идентичны вашим)
+    // Рендеры списков (без изменений)
     function renderServices() {
         const container = document.getElementById('servicesList');
         if (!appState.services.length) { container.innerHTML = '<div class="text-secondary p-3">Нет записей</div>'; return; }
@@ -918,16 +899,13 @@
     googleLoginBtn.addEventListener('click', async () => {
         try {
             const result = await signInWithPopup(auth, googleProvider);
-            // Сохраним данные профиля в Firestore
             const user = result.user;
-            const profile = {
-                firstName: user.displayName?.split(' ')[0] || '',
-                lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
-                nickname: user.email.split('@')[0]
-            };
-            // Обновим appState и Firestore
-            appState.profile = profile;
+            // Устанавливаем никнейм на основе email
+            const nickname = user.email.split('@')[0];
+            appState.profile = { nickname };
             await saveToFirestore();
+            // Обновляем displayName в auth (чтобы было красиво)
+            await updateProfile(user, { displayName: nickname });
             loginModal.hide();
         } catch (error) {
             document.getElementById('loginMessage').innerText = error.message;
@@ -936,31 +914,33 @@
 
     // Регистрация
     registerBtn.addEventListener('click', async () => {
-        const firstName = document.getElementById('registerFirstName').value.trim();
-        const lastName = document.getElementById('registerLastName').value.trim();
         const nickname = document.getElementById('registerNickname').value.trim();
         const email = document.getElementById('registerEmail').value.trim();
         const password = document.getElementById('registerPassword').value;
         const msg = document.getElementById('registerMessage');
+        const successMsg = document.getElementById('registerSuccessMessage');
 
-        if (!firstName) { msg.innerText = 'Введите имя'; return; }
         if (!nickname) { msg.innerText = 'Введите никнейм'; return; }
         if (!email) { msg.innerText = 'Введите email'; return; }
         if (password.length < 6) { msg.innerText = 'Пароль должен быть не менее 6 символов'; return; }
 
         try {
+            msg.innerText = '';
+            successMsg.style.display = 'block';
+            successMsg.innerText = 'Регистрация успешна! Выполняется вход...';
+            
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-            // Устанавливаем displayName (склеиваем имя и фамилию)
-            const displayName = lastName ? `${firstName} ${lastName}` : firstName;
-            await updateProfile(user, { displayName });
+            // Устанавливаем displayName = nickname
+            await updateProfile(user, { displayName: nickname });
             // Сохраняем профиль в Firestore
-            appState.profile = { firstName, lastName, nickname };
-            // Обновим документ пользователя (пока он пустой, создадим)
+            appState.profile = { nickname };
             const docRef = doc(db, 'userData', user.uid);
             await setDoc(docRef, appState);
+            
             registerModal.hide();
         } catch (error) {
+            successMsg.style.display = 'none';
             msg.innerText = error.message;
         }
     });
@@ -970,21 +950,17 @@
         await signOut(auth);
     });
 
-    // Сохранение профиля
+    // Сохранение профиля (только никнейм)
     document.getElementById('saveProfileBtn').addEventListener('click', async () => {
-        const firstName = document.getElementById('profileFirstName').value.trim();
-        const lastName = document.getElementById('profileLastName').value.trim();
         const nickname = document.getElementById('profileNickname').value.trim();
         const msg = document.getElementById('profileMessage');
 
-        if (!firstName) { msg.innerText = 'Имя не может быть пустым'; return; }
         if (!nickname) { msg.innerText = 'Никнейм не может быть пустым'; return; }
 
-        appState.profile = { firstName, lastName, nickname };
+        appState.profile = { nickname };
         // Обновляем displayName в аутентификации
         if (currentUser) {
-            const displayName = lastName ? `${firstName} ${lastName}` : firstName;
-            await updateProfile(currentUser, { displayName });
+            await updateProfile(currentUser, { displayName: nickname });
         }
         await saveState();
         msg.innerText = 'Профиль обновлён';
@@ -997,12 +973,14 @@
         currentUser = user;
         if (user) {
             // Пользователь вошёл
-            userDisplayName.textContent = appState.profile?.nickname || user.email.split('@')[0];
             loginButton.style.display = 'none';
             registerButton.style.display = 'none';
             logoutBtn.style.display = 'inline-block';
             profileIcon.style.display = 'inline-block';
+            
             await loadFromFirestore(user.uid);
+            // Отображаем никнейм (или email, если нет)
+            userDisplayName.textContent = appState.profile?.nickname || user.email.split('@')[0];
         } else {
             // Гость
             userDisplayName.textContent = '';
@@ -1018,12 +996,7 @@
     profileModalEl.addEventListener('show.bs.modal', () => {
         if (currentUser) {
             document.getElementById('profileEmail').value = currentUser.email || '';
-            document.getElementById('profileFirstName').value = appState.profile?.firstName || '';
-            document.getElementById('profileLastName').value = appState.profile?.lastName || '';
             document.getElementById('profileNickname').value = appState.profile?.nickname || '';
-            // Определяем провайдера
-            const provider = currentUser.providerData[0]?.providerId || 'email';
-            document.getElementById('profileProvider').value = provider === 'password' ? 'Email/Пароль' : 'Google';
         }
     });
 
