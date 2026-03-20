@@ -76,6 +76,12 @@
                 <button onclick="openServiceModal()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl shadow hover:bg-blue-700 transition font-medium"><i class="fas fa-plus"></i> Запись ТО</button>
                 <button onclick="openFuelModal()" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl shadow hover:bg-emerald-700 transition font-medium"><i class="fas fa-plus"></i> Заправка</button>
             </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 mt-6">
+                <h3 class="font-bold text-lg mb-4 text-slate-800"><i class="fas fa-history text-slate-400 mr-2"></i>Последние записи</h3>
+                <div id="dash-recent-list" class="divide-y divide-slate-100">
+                    </div>
+            </div>
         </div>
 
         <div id="tab-service" class="tab-content hidden">
@@ -222,7 +228,7 @@
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
         // =========================================================
-        // ВАШ FIREBASE CONFIG (Замените на свои данные)
+        // ВАШ FIREBASE CONFIG
         // =========================================================
         const firebaseConfig = {
             apiKey: "AIzaSyAcYMr_VmmeZm0f_SJo4plm-wOAmhKuZpU",
@@ -256,7 +262,7 @@
             setTimeout(() => t.classList.add('hidden'), 3500);
         };
 
-        // --- ОТКРЫТИЕ МОДАЛОК (с подгрузкой данных) ---
+        // --- ОТКРЫТИЕ МОДАЛОК ---
         window.openCarModal = () => {
             document.getElementById('car-make').value = appState.car.make || '';
             document.getElementById('car-year').value = appState.car.year || '';
@@ -361,7 +367,11 @@
 
         async function loadData() {
             const local = localStorage.getItem('autoBookState');
-            if (local) appState = JSON.parse(local);
+            if (local) {
+                appState = JSON.parse(local);
+            } else {
+                appState = { car: { make: '', year: '', plate: '', mileage: 0 }, services: [], fuelings: [], reminders: [] };
+            }
 
             if (currentUser) {
                 try {
@@ -377,7 +387,7 @@
             updateUI();
         }
 
-        // --- АВТОРИЗАЦИЯ ---
+        // --- АВТОРИЗАЦИЯ И ВЫХОД ---
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             const uiUser = document.getElementById('user-info');
@@ -417,14 +427,24 @@
             }
         };
 
-        document.getElementById('btn-logout').onclick = () => signOut(auth);
+        // Логика выхода (очистка данных в браузере)
+        document.getElementById('btn-logout').onclick = async () => {
+            if(confirm('Выйти из аккаунта? Локальные данные будут очищены в целях безопасности.')) {
+                localStorage.removeItem('autoBookState'); // Удаляем данные из памяти ПК
+                appState = { car: { make: '', year: '', plate: '', mileage: 0 }, services: [], fuelings: [], reminders: [] }; // Сбрасываем переменные
+                await signOut(auth);
+                showToast('Вы вышли из аккаунта');
+            }
+        };
 
         // --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ---
         function updateUI() {
+            // Данные авто
             document.getElementById('display-car-name').innerText = appState.car.make || 'Мой Автомобиль';
             document.getElementById('display-car-details').innerText = `${appState.car.year || ''} ${appState.car.plate ? `| Гос.номер: ${appState.car.plate}` : ''}`;
             document.getElementById('display-mileage').innerText = appState.car.mileage.toLocaleString();
 
+            // Сводные карточки
             let totalCost = appState.services.reduce((acc, s) => acc + Number(s.cost), 0) + 
                             appState.fuelings.reduce((acc, f) => acc + Number(f.cost), 0);
             document.getElementById('dash-total-cost').innerText = `${totalCost.toLocaleString()} ₽`;
@@ -447,6 +467,38 @@
             if (activeRems.length > 0) document.getElementById('dash-reminders-count').classList.add('text-red-500');
             else document.getElementById('dash-reminders-count').classList.remove('text-red-500');
 
+            // Новое: Лента последних записей в Сводке
+            const recentContainer = document.getElementById('dash-recent-list');
+            const allRecords = [
+                ...appState.services.map(s => ({ ...s, _type: 'service', _title: s.type, _icon: 'fa-wrench text-blue-500', _bg: 'bg-blue-50' })),
+                ...appState.fuelings.map(f => ({ ...f, _type: 'fuel', _title: `Заправка ${f.liters} л.`, _icon: 'fa-gas-pump text-emerald-500', _bg: 'bg-emerald-50' }))
+            ];
+            
+            allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+            const top5 = allRecords.slice(0, 5);
+            
+            if (top5.length === 0) {
+                recentContainer.innerHTML = '<div class="text-center text-slate-400 py-4">Здесь появится история обслуживания</div>';
+            } else {
+                recentContainer.innerHTML = top5.map(item => `
+                    <div class="py-3 flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center ${item._bg}">
+                                <i class="fas ${item._icon}"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-800">${item._title}</p>
+                                <p class="text-xs text-slate-500">${item.date} • ${item.mileage} км</p>
+                            </div>
+                        </div>
+                        <div class="font-bold text-slate-800">
+                            ${Number(item.cost).toLocaleString()} ₽
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Рендер основных списков по вкладкам
             renderList('list-services', appState.services, s => `
                 <div class="p-4 flex justify-between items-center hover:bg-slate-50 transition">
                     <div>
