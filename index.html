@@ -70,7 +70,7 @@
         </div>
     </div>
 
-    <!-- Вкладки (без изменений) -->
+    <!-- Вкладки -->
     <ul class="nav nav-tabs" id="mainTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button"><i class="fas fa-chart-pie me-2"></i>Главная</button>
@@ -216,7 +216,7 @@
     </div>
 </div>
 
-<!-- Модальное окно РЕГИСТРАЦИИ (убраны имя и фамилия) -->
+<!-- Модальное окно РЕГИСТРАЦИИ -->
 <div class="modal fade" id="registerModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -249,7 +249,7 @@
     </div>
 </div>
 
-<!-- Модальное окно ПРОФИЛЯ (только никнейм и email) -->
+<!-- Модальное окно ПРОФИЛЯ -->
 <div class="modal fade" id="profileModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -275,7 +275,6 @@
     </div>
 </div>
 
-<!-- Остальные модальные окна (без изменений) -->
 <!-- Редактирование авто -->
 <div class="modal fade" id="editCarModal" tabindex="-1">
     <div class="modal-dialog">
@@ -395,12 +394,9 @@
 <!-- Кнопка быстрого добавления -->
 <button class="btn btn-primary fab-button" data-bs-toggle="modal" data-bs-target="#addFuelingModal"><i class="fas fa-plus"></i> Заправка</button>
 
-<!-- Подключение Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Основной скрипт с Firebase (модуль) -->
 <script type="module">
-    // Импортируем Firebase
     import { initializeApp } from 'firebase/app';
     import { 
         getAuth, 
@@ -420,7 +416,6 @@
         enableIndexedDbPersistence 
     } from 'firebase/firestore';
 
-    // ⚠️ Ваши данные Firebase ⚠️
     const firebaseConfig = {
         apiKey: "AIzaSyAcYMr_VmmeZm0f_SJo4plm-wOAmhKuZpU",
         authDomain: "servicecarbook.firebaseapp.com",
@@ -428,7 +423,6 @@
         storageBucket: "servicecarbook.firebasestorage.app",
         messagingSenderId: "321524196690",
         appId: "1:321524196690:web:4d3fe9df49b4ed2cc3068b"
-        // measurementId: "G-DMGBWSE38R" // необязательно
     };
 
     const app = initializeApp(firebaseConfig);
@@ -437,7 +431,7 @@
     enableIndexedDbPersistence(db).catch(console.warn);
     const googleProvider = new GoogleAuthProvider();
 
-    // ------------------- Состояние приложения -------------------
+    // Состояние
     let appState = {
         profile: { nickname: '' },
         car: { makeModel: '', year: null, plate: '', vin: '', currentMileage: 0 },
@@ -448,7 +442,46 @@
     let currentUser = null;
     let isLoadingFromFirestore = false;
 
-    // ------------------- Функции работы с данными -------------------
+    // Вспомогательные функции
+    async function saveState() {
+        if (currentUser && !isLoadingFromFirestore) {
+            try {
+                const docRef = doc(db, 'userData', currentUser.uid);
+                await setDoc(docRef, appState);
+            } catch (e) { console.error(e); }
+        } else {
+            localStorage.setItem('carServiceBook', JSON.stringify(appState));
+        }
+        updateUI();
+    }
+
+    async function loadFromFirestore(uid) {
+        isLoadingFromFirestore = true;
+        try {
+            const docRef = doc(db, 'userData', uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                appState = docSnap.data();
+                if (!appState.profile) appState.profile = { nickname: '' };
+                if (!appState.car) appState.car = { makeModel: '', year: null, plate: '', vin: '', currentMileage: 0 };
+                if (!appState.services) appState.services = [];
+                if (!appState.fuelings) appState.fuelings = [];
+                if (!appState.reminders) appState.reminders = [];
+            } else {
+                appState = {
+                    profile: { nickname: auth.currentUser?.email?.split('@')[0] || '' },
+                    car: { makeModel: '', year: null, plate: '', vin: '', currentMileage: 0 },
+                    services: [],
+                    fuelings: [],
+                    reminders: []
+                };
+                await setDoc(docRef, appState);
+            }
+        } catch (e) { console.error(e); }
+        isLoadingFromFirestore = false;
+        updateUI();
+    }
+
     function loadFromLocalStorage() {
         const saved = localStorage.getItem('carServiceBook');
         if (saved) {
@@ -462,67 +495,8 @@
         updateUI();
     }
 
-    function saveToLocalStorage() {
-        localStorage.setItem('carServiceBook', JSON.stringify(appState));
-        updateUI();
-    }
-
-    async function loadFromFirestore(uid) {
-        isLoadingFromFirestore = true;
-        try {
-            const docRef = doc(db, 'userData', uid);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                appState = docSnap.data();
-            } else {
-                appState = {
-                    profile: { nickname: '' },
-                    car: { makeModel: '', year: null, plate: '', vin: '', currentMileage: 0 },
-                    services: [],
-                    fuelings: [],
-                    reminders: []
-                };
-                await setDoc(docRef, appState);
-            }
-            // Если профиль не содержит nickname, используем email
-            if (!appState.profile) appState.profile = { nickname: '' };
-            if (!appState.profile.nickname && auth.currentUser) {
-                appState.profile.nickname = auth.currentUser.email.split('@')[0];
-            }
-        } catch (error) {
-            console.error('Ошибка загрузки из Firestore:', error);
-            loadFromLocalStorage();
-        }
-        isLoadingFromFirestore = false;
-        // После загрузки обновим отображаемое имя
-        if (currentUser) {
-            document.getElementById('userDisplayName').textContent = appState.profile?.nickname || currentUser.email.split('@')[0];
-        }
-        updateUI();
-    }
-
-    async function saveToFirestore() {
-        if (!currentUser) return;
-        try {
-            const docRef = doc(db, 'userData', currentUser.uid);
-            await setDoc(docRef, appState);
-        } catch (error) {
-            console.error('Ошибка сохранения в Firestore:', error);
-        }
-    }
-
-    async function saveState() {
-        if (currentUser && !isLoadingFromFirestore) {
-            await saveToFirestore();
-        } else {
-            saveToLocalStorage();
-        }
-        updateUI();
-    }
-
-    // ------------------- Обновление UI -------------------
+    // UI обновление (рендер)
     function updateUI() {
-        // Шапка автомобиля
         document.getElementById('carDisplay').innerText = appState.car.makeModel || '—';
         const details = [];
         if (appState.car.year) details.push(appState.car.year);
@@ -531,12 +505,13 @@
         document.getElementById('carDetails').innerText = details.join(' • ');
         document.getElementById('currentMileageDisplay').innerText = appState.car.currentMileage ? appState.car.currentMileage.toLocaleString() : '0';
 
-        // Главная панель
+        // Последняя заправка
         if (appState.fuelings.length) {
             const lastF = [...appState.fuelings].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
             document.getElementById('lastFuelDate').innerText = new Date(lastF.date).toLocaleDateString('ru-RU');
             document.getElementById('lastFuelAmount').innerText = lastF.liters + ' л · ';
             document.getElementById('lastFuelCost').innerText = lastF.totalCost + ' ₽';
+            // средний расход (упрощённо)
             if (appState.fuelings.length > 1) {
                 const sorted = [...appState.fuelings].sort((a,b)=>new Date(a.date)-new Date(b.date));
                 let totalLiters = 0, totalKm = 0;
@@ -549,12 +524,8 @@
                 if (totalKm>0) {
                     const avg = (totalLiters / totalKm * 100).toFixed(1);
                     document.getElementById('avgConsumption').innerHTML = avg + ' <small>л/100км</small>';
-                } else {
-                    document.getElementById('avgConsumption').innerHTML = '— <small>л/100км</small>';
-                }
-            } else {
-                document.getElementById('avgConsumption').innerHTML = '— <small>л/100км</small>';
-            }
+                } else { document.getElementById('avgConsumption').innerHTML = '— <small>л/100км</small>'; }
+            } else { document.getElementById('avgConsumption').innerHTML = '— <small>л/100км</small>'; }
         } else {
             document.getElementById('lastFuelDate').innerText = '—';
             document.getElementById('lastFuelAmount').innerText = '';
@@ -577,11 +548,9 @@
         renderServices();
         renderFuelings();
         renderReminders();
-
         if (document.getElementById('stats').classList.contains('active')) updateCharts();
     }
 
-    // Рендеры списков (без изменений)
     function renderServices() {
         const container = document.getElementById('servicesList');
         if (!appState.services.length) { container.innerHTML = '<div class="text-secondary p-3">Нет записей</div>'; return; }
@@ -593,8 +562,8 @@
                     <span class="small-text">Пробег: ${s.mileage} км · Стоимость: ${s.cost} ₽ · ${s.notes || ''}</span>
                 </div>
                 <div>
-                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="editService('${s.id}')"><i class="fas fa-edit"></i></button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="deleteService('${s.id}')"><i class="fas fa-trash"></i></button>
+                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="window.editService('${s.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="window.deleteService('${s.id}')"><i class="fas fa-trash"></i></button>
                 </div>
             </div>`).join('');
     }
@@ -610,8 +579,8 @@
                     <span class="small-text">Пробег: ${f.mileage} км · ${f.pricePerLiter} ₽/л · ${f.fullTank ? 'полный бак' : 'неполный'}</span>
                 </div>
                 <div>
-                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="editFueling('${f.id}')"><i class="fas fa-edit"></i></button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="deleteFueling('${f.id}')"><i class="fas fa-trash"></i></button>
+                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="window.editFueling('${f.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="window.deleteFueling('${f.id}')"><i class="fas fa-trash"></i></button>
                 </div>
             </div>`).join('');
     }
@@ -636,8 +605,8 @@
             return `<div class="list-group-item d-flex justify-content-between align-items-center hover-bg">
                 <div><i class="fas fa-bell me-2 ${r.active ? 'text-warning' : 'text-secondary'}"></i> <strong>${r.title}</strong> — ${due} </div>
                 <div>
-                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="editReminder('${r.id}')"><i class="fas fa-edit"></i></button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="deleteReminder('${r.id}')"><i class="fas fa-trash"></i></button>
+                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="window.editReminder('${r.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="window.deleteReminder('${r.id}')"><i class="fas fa-trash"></i></button>
                 </div>
             </div>`;
         }).join('');
@@ -650,12 +619,11 @@
         }).join('') || '<li class="small-text">Нет активных</li>';
     }
 
-    // Удаление
+    // Глобальные функции для удаления/редактирования
     window.deleteService = (id) => { appState.services = appState.services.filter(s => s.id != id); saveState(); };
     window.deleteFueling = (id) => { appState.fuelings = appState.fuelings.filter(f => f.id != id); saveState(); };
     window.deleteReminder = (id) => { appState.reminders = appState.reminders.filter(r => r.id != id); saveState(); };
 
-    // Редактирование (без изменений)
     window.editService = (id) => {
         const service = appState.services.find(s => s.id == id);
         if (!service) return;
@@ -697,7 +665,7 @@
         new bootstrap.Modal(document.getElementById('addReminderModal')).show();
     };
 
-    // Сохранение авто
+    // Обработчики сохранения (аналогичны вашим)
     document.getElementById('saveCarBtn').addEventListener('click', async () => {
         appState.car.makeModel = document.getElementById('carMakeModel').value;
         appState.car.year = parseInt(document.getElementById('carYear').value) || null;
@@ -708,7 +676,6 @@
         bootstrap.Modal.getInstance(document.getElementById('editCarModal')).hide();
     });
 
-    // Сохранение обслуживания
     document.getElementById('saveServiceBtn').addEventListener('click', async () => {
         const id = document.getElementById('serviceId').value;
         const serviceData = {
@@ -732,7 +699,6 @@
         document.getElementById('serviceModalTitle').innerText = 'Новая запись о ТО';
     });
 
-    // Сохранение заправки
     document.getElementById('fuelLiters').addEventListener('input', calcFuelTotal);
     document.getElementById('fuelPrice').addEventListener('input', calcFuelTotal);
     function calcFuelTotal() {
@@ -751,9 +717,7 @@
             totalCost: parseFloat(document.getElementById('fuelTotal').value) || 0,
             fullTank: document.getElementById('fuelFullTank').checked
         };
-        if (fuelData.mileage > appState.car.currentMileage) {
-            appState.car.currentMileage = fuelData.mileage;
-        }
+        if (fuelData.mileage > appState.car.currentMileage) appState.car.currentMileage = fuelData.mileage;
         if (id) {
             const index = appState.fuelings.findIndex(f => f.id == id);
             if (index !== -1) appState.fuelings[index] = fuelData;
@@ -768,7 +732,6 @@
         document.getElementById('fuelingModalTitle').innerText = 'Новая заправка';
     });
 
-    // Сохранение напоминания
     document.getElementById('saveReminderBtn').addEventListener('click', async () => {
         const id = document.getElementById('reminderId').value;
         const reminderData = {
@@ -800,44 +763,21 @@
         if (monthlyChart) monthlyChart.destroy();
         if (categoryChart) categoryChart.destroy();
         if (fuelChart) fuelChart.destroy();
-
         const months = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
         const monthlyData = new Array(12).fill(0);
         appState.services.forEach(s => { let m = new Date(s.date).getMonth(); monthlyData[m] += s.cost || 0; });
         appState.fuelings.forEach(f => { let m = new Date(f.date).getMonth(); monthlyData[m] += f.totalCost || 0; });
-
-        monthlyChart = new Chart(document.getElementById('monthlyChart'), {
-            type: 'bar',
-            data: { labels: months, datasets: [{ label: 'Расходы (₽)', data: monthlyData, backgroundColor: '#0d6efd' }] }
-        });
-
+        monthlyChart = new Chart(document.getElementById('monthlyChart'), { type: 'bar', data: { labels: months, datasets: [{ label: 'Расходы (₽)', data: monthlyData, backgroundColor: '#0d6efd' }] } });
         const totalService = appState.services.reduce((a,b)=>a+(b.cost||0),0);
         const totalFuel = appState.fuelings.reduce((a,b)=>a+(b.totalCost||0),0);
-        categoryChart = new Chart(document.getElementById('categoryChart'), {
-            type: 'doughnut',
-            data: { labels: ['ТО', 'Топливо'], datasets: [{ data: [totalService, totalFuel], backgroundColor: ['#ffc107', '#0d6efd'] }] }
-        });
-
+        categoryChart = new Chart(document.getElementById('categoryChart'), { type: 'doughnut', data: { labels: ['ТО', 'Топливо'], datasets: [{ data: [totalService, totalFuel], backgroundColor: ['#ffc107', '#0d6efd'] }] } });
         const last5 = [...appState.fuelings].sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(-5);
-        fuelChart = new Chart(document.getElementById('fuelChart'), {
-            type: 'line',
-            data: { labels: last5.map(f=>new Date(f.date).toLocaleDateString('ru-RU')), datasets: [{ label: 'л/100км', data: last5.map((f,i,arr)=> {
-                if(i===0 || !f.fullTank) return null;
-                const prev = arr[i-1];
-                const km = f.mileage - prev.mileage;
-                return km>0 ? ((f.liters / km)*100).toFixed(1) : null;
-            }), borderColor: '#198754' }] }
-        });
+        fuelChart = new Chart(document.getElementById('fuelChart'), { type: 'line', data: { labels: last5.map(f=>new Date(f.date).toLocaleDateString('ru-RU')), datasets: [{ label: 'л/100км', data: last5.map((f,i,arr)=> { if(i===0 || !f.fullTank) return null; const prev = arr[i-1]; const km = f.mileage - prev.mileage; return km>0 ? ((f.liters / km)*100).toFixed(1) : null; }), borderColor: '#198754' }] } });
     }
 
-    // Переключение вкладок для графиков
-    document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(btn => {
-        btn.addEventListener('shown.bs.tab', (e) => {
-            if (e.target.id === 'stats-tab') updateCharts();
-        });
-    });
+    document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(btn => btn.addEventListener('shown.bs.tab', (e) => { if (e.target.id === 'stats-tab') updateCharts(); }));
 
-    // Экспорт / импорт
+    // Экспорт/импорт
     document.getElementById('exportData').addEventListener('click', ()=>{
         const dataStr = JSON.stringify(appState, null, 2);
         const blob = new Blob([dataStr], {type: 'application/json'});
@@ -855,16 +795,13 @@
             try {
                 const imported = JSON.parse(ev.target.result);
                 appState = imported;
-                saveState().then(() => {
-                    alert('Данные импортированы');
-                    location.reload();
-                });
+                saveState().then(() => { alert('Данные импортированы'); location.reload(); });
             } catch (ex) { alert('Ошибка импорта'); }
         };
         reader.readAsText(file);
     });
 
-    // ------------------- Аутентификация и профиль -------------------
+    // Аутентификация
     const loginBtn = document.getElementById('loginBtn');
     const googleLoginBtn = document.getElementById('googleLoginBtn');
     const registerBtn = document.getElementById('registerBtn');
@@ -873,121 +810,85 @@
     const registerButton = document.getElementById('registerButton');
     const userDisplayName = document.getElementById('userDisplayName');
     const profileIcon = document.getElementById('profileIcon');
-    const loginModalEl = document.getElementById('loginModal');
-    const registerModalEl = document.getElementById('registerModal');
-    const profileModalEl = document.getElementById('profileModal');
-    const loginModal = new bootstrap.Modal(loginModalEl);
-    const registerModal = new bootstrap.Modal(registerModalEl);
-    const profileModal = new bootstrap.Modal(profileModalEl);
+    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+    const registerModal = new bootstrap.Modal(document.getElementById('registerModal'));
 
-    // Вход
     loginBtn.addEventListener('click', async () => {
         const email = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPassword').value;
         const msg = document.getElementById('loginMessage');
-        if (!email) { msg.innerText = 'Введите email'; return; }
-        if (!password) { msg.innerText = 'Введите пароль'; return; }
+        if (!email || !password) { msg.innerText = 'Заполните все поля'; return; }
         try {
             await signInWithEmailAndPassword(auth, email, password);
             loginModal.hide();
-        } catch (error) {
-            msg.innerText = error.message;
-        }
+        } catch (error) { msg.innerText = error.message; }
     });
 
-    // Google вход
     googleLoginBtn.addEventListener('click', async () => {
         try {
             const result = await signInWithPopup(auth, googleProvider);
             const user = result.user;
-            // Устанавливаем никнейм на основе email
             const nickname = user.email.split('@')[0];
             appState.profile = { nickname };
-            await saveToFirestore();
-            // Обновляем displayName в auth (чтобы было красиво)
+            await saveState();
             await updateProfile(user, { displayName: nickname });
             loginModal.hide();
-        } catch (error) {
-            document.getElementById('loginMessage').innerText = error.message;
-        }
+        } catch (error) { document.getElementById('loginMessage').innerText = error.message; }
     });
 
-    // Регистрация (обновлённая)
     registerBtn.addEventListener('click', async () => {
         const nickname = document.getElementById('registerNickname').value.trim();
         const email = document.getElementById('registerEmail').value.trim();
         const password = document.getElementById('registerPassword').value;
         const msg = document.getElementById('registerMessage');
         const successMsg = document.getElementById('registerSuccessMessage');
-
-        if (!nickname) { msg.innerText = 'Введите никнейм'; return; }
-        if (!email) { msg.innerText = 'Введите email'; return; }
-        if (password.length < 6) { msg.innerText = 'Пароль должен быть не менее 6 символов'; return; }
-
+        if (!nickname || !email || password.length < 6) {
+            msg.innerText = 'Заполните все поля (пароль минимум 6 символов)';
+            return;
+        }
         try {
             msg.innerText = '';
             successMsg.style.display = 'block';
-            successMsg.innerText = 'Регистрация успешна! Выполняется вход...';
-
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             await updateProfile(user, { displayName: nickname });
-
             appState.profile = { nickname };
             const docRef = doc(db, 'userData', user.uid);
             await setDoc(docRef, appState);
-
-            // Сброс формы и закрытие модального окна
             document.getElementById('registerForm').reset();
             setTimeout(() => {
-                const modalInstance = bootstrap.Modal.getInstance(registerModalEl);
-                if (modalInstance) modalInstance.hide();
+                registerModal.hide();
                 successMsg.style.display = 'none';
-            }, 1500); // Даём прочитать сообщение об успехе
+            }, 1500);
         } catch (error) {
             successMsg.style.display = 'none';
             msg.innerText = error.message;
         }
     });
 
-    // Выход
-    logoutBtn.addEventListener('click', async () => {
-        await signOut(auth);
-    });
+    logoutBtn.addEventListener('click', async () => { await signOut(auth); });
 
-    // Сохранение профиля (только никнейм)
     document.getElementById('saveProfileBtn').addEventListener('click', async () => {
         const nickname = document.getElementById('profileNickname').value.trim();
-        const msg = document.getElementById('profileMessage');
-
-        if (!nickname) { msg.innerText = 'Никнейм не может быть пустым'; return; }
-
+        if (!nickname) { document.getElementById('profileMessage').innerText = 'Никнейм не может быть пустым'; return; }
         appState.profile = { nickname };
-        // Обновляем displayName в аутентификации
-        if (currentUser) {
-            await updateProfile(currentUser, { displayName: nickname });
-        }
+        if (currentUser) await updateProfile(currentUser, { displayName: nickname });
         await saveState();
-        msg.innerText = 'Профиль обновлён';
-        setTimeout(() => msg.innerText = '', 2000);
+        document.getElementById('profileMessage').innerText = 'Профиль обновлён';
+        setTimeout(() => document.getElementById('profileMessage').innerText = '', 2000);
         updateUI();
     });
 
-    // Слушаем состояние аутентификации
     onAuthStateChanged(auth, async (user) => {
         currentUser = user;
         if (user) {
-            // Пользователь вошёл
             loginButton.style.display = 'none';
             registerButton.style.display = 'none';
             logoutBtn.style.display = 'inline-block';
             profileIcon.style.display = 'inline-block';
-            
             await loadFromFirestore(user.uid);
-            // Отображаем никнейм (или email, если нет)
             userDisplayName.textContent = appState.profile?.nickname || user.email.split('@')[0];
         } else {
-            // Гость
             userDisplayName.textContent = '';
             loginButton.style.display = 'inline-block';
             registerButton.style.display = 'inline-block';
@@ -997,33 +898,31 @@
         }
     });
 
-    // Заполнение модалки профиля при открытии
-    profileModalEl.addEventListener('show.bs.modal', () => {
+    document.getElementById('profileModal').addEventListener('show.bs.modal', () => {
         if (currentUser) {
             document.getElementById('profileEmail').value = currentUser.email || '';
             document.getElementById('profileNickname').value = appState.profile?.nickname || '';
         }
     });
 
-    // Сброс модалок
-    document.getElementById('addServiceModal').addEventListener('hidden.bs.modal', function() {
+    // Сброс форм при закрытии модалок
+    document.getElementById('addServiceModal').addEventListener('hidden.bs.modal', () => {
         document.getElementById('serviceForm').reset();
         document.getElementById('serviceId').value = '';
         document.getElementById('serviceModalTitle').innerText = 'Новая запись о ТО';
     });
-    document.getElementById('addFuelingModal').addEventListener('hidden.bs.modal', function() {
+    document.getElementById('addFuelingModal').addEventListener('hidden.bs.modal', () => {
         document.getElementById('fuelingForm').reset();
         document.getElementById('fuelTotal').value = '';
         document.getElementById('fuelingId').value = '';
         document.getElementById('fuelingModalTitle').innerText = 'Новая заправка';
     });
-    document.getElementById('addReminderModal').addEventListener('hidden.bs.modal', function() {
+    document.getElementById('addReminderModal').addEventListener('hidden.bs.modal', () => {
         document.getElementById('reminderForm').reset();
         document.getElementById('reminderId').value = '';
         document.getElementById('reminderModalTitle').innerText = 'Новое напоминание';
     });
 
-    // Инициализация
     loadFromLocalStorage();
 </script>
 </body>
