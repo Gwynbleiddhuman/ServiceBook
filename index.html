@@ -44,7 +44,7 @@
             <div class="text-right">
                 <p class="text-xs text-slate-400 uppercase tracking-wide font-bold">Текущий пробег</p>
                 <p class="text-2xl font-bold text-slate-800"><span id="display-mileage">0</span> <span class="text-sm text-slate-500">км</span></p>
-                <button onclick="carModal.showModal()" class="text-blue-600 hover:underline text-sm mt-1"><i class="fas fa-pen"></i> Изменить авто</button>
+                <button onclick="openCarModal()" class="text-blue-600 hover:underline text-sm mt-1"><i class="fas fa-pen"></i> Изменить авто</button>
             </div>
         </div>
 
@@ -73,8 +73,8 @@
             </div>
             
             <div class="flex gap-4">
-                <button onclick="serviceModal.showModal()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl shadow hover:bg-blue-700 transition font-medium"><i class="fas fa-plus"></i> Запись ТО</button>
-                <button onclick="fuelModal.showModal()" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl shadow hover:bg-emerald-700 transition font-medium"><i class="fas fa-plus"></i> Заправка</button>
+                <button onclick="openServiceModal()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl shadow hover:bg-blue-700 transition font-medium"><i class="fas fa-plus"></i> Запись ТО</button>
+                <button onclick="openFuelModal()" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl shadow hover:bg-emerald-700 transition font-medium"><i class="fas fa-plus"></i> Заправка</button>
             </div>
         </div>
 
@@ -82,10 +82,9 @@
             <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
                 <div class="p-4 border-b flex justify-between items-center bg-slate-50">
                     <h3 class="font-bold text-lg">История обслуживания</h3>
-                    <button onclick="serviceModal.showModal()" class="text-blue-600 hover:text-blue-800"><i class="fas fa-plus-circle fa-lg"></i></button>
+                    <button onclick="openServiceModal()" class="text-blue-600 hover:text-blue-800"><i class="fas fa-plus-circle fa-lg"></i></button>
                 </div>
-                <div id="list-services" class="divide-y divide-slate-100">
-                    </div>
+                <div id="list-services" class="divide-y divide-slate-100"></div>
             </div>
         </div>
 
@@ -93,10 +92,9 @@
             <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
                 <div class="p-4 border-b flex justify-between items-center bg-slate-50">
                     <h3 class="font-bold text-lg">Журнал заправок</h3>
-                    <button onclick="fuelModal.showModal()" class="text-blue-600 hover:text-blue-800"><i class="fas fa-plus-circle fa-lg"></i></button>
+                    <button onclick="openFuelModal()" class="text-blue-600 hover:text-blue-800"><i class="fas fa-plus-circle fa-lg"></i></button>
                 </div>
-                <div id="list-fuelings" class="divide-y divide-slate-100">
-                    </div>
+                <div id="list-fuelings" class="divide-y divide-slate-100"></div>
             </div>
         </div>
 
@@ -104,10 +102,9 @@
             <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
                 <div class="p-4 border-b flex justify-between items-center bg-slate-50">
                     <h3 class="font-bold text-lg">Предстоящие события</h3>
-                    <button onclick="reminderModal.showModal()" class="text-blue-600 hover:text-blue-800"><i class="fas fa-plus-circle fa-lg"></i></button>
+                    <button onclick="openReminderModal()" class="text-blue-600 hover:text-blue-800"><i class="fas fa-plus-circle fa-lg"></i></button>
                 </div>
-                <div id="list-reminders" class="divide-y divide-slate-100">
-                    </div>
+                <div id="list-reminders" class="divide-y divide-slate-100"></div>
             </div>
         </div>
 
@@ -163,8 +160,9 @@
 
     <dialog id="serviceModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-md m-auto top-1/2 -translate-y-1/2">
         <div class="p-6">
-            <h3 class="text-xl font-bold mb-4">Запись о ТО</h3>
+            <h3 class="text-xl font-bold mb-4" id="srv-modal-title">Запись о ТО</h3>
             <form id="form-service" class="space-y-3">
+                <input type="hidden" id="srv-id">
                 <input type="date" id="srv-date" class="w-full border p-2 rounded bg-slate-50" required>
                 <input type="text" id="srv-type" placeholder="Тип работ (Масло, фильтры...)" class="w-full border p-2 rounded bg-slate-50" required>
                 <div class="grid grid-cols-2 gap-3">
@@ -181,8 +179,9 @@
 
     <dialog id="fuelModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-md m-auto top-1/2 -translate-y-1/2">
         <div class="p-6">
-            <h3 class="text-xl font-bold mb-4">Заправка</h3>
+            <h3 class="text-xl font-bold mb-4" id="fl-modal-title">Заправка</h3>
             <form id="form-fuel" class="space-y-3">
+                <input type="hidden" id="fl-id">
                 <input type="date" id="fl-date" class="w-full border p-2 rounded bg-slate-50" required>
                 <input type="number" id="fl-mileage" placeholder="Пробег (км)" class="w-full border p-2 rounded bg-slate-50" required>
                 <div class="grid grid-cols-2 gap-3">
@@ -203,8 +202,9 @@
 
     <dialog id="reminderModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-md m-auto top-1/2 -translate-y-1/2">
         <div class="p-6">
-            <h3 class="text-xl font-bold mb-4">Напоминание</h3>
+            <h3 class="text-xl font-bold mb-4" id="rem-modal-title">Напоминание</h3>
             <form id="form-reminder" class="space-y-3">
+                <input type="hidden" id="rem-id">
                 <input type="text" id="rem-title" placeholder="Что нужно сделать?" class="w-full border p-2 rounded bg-slate-50" required>
                 <input type="number" id="rem-mileage" placeholder="На каком пробеге? (км)" class="w-full border p-2 rounded bg-slate-50" required>
                 <div class="flex gap-2 mt-4">
@@ -222,7 +222,7 @@
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
         // =========================================================
-        // ВАШ FIREBASE CONFIG (Замените на свои данные из консоли!)
+        // ВАШ FIREBASE CONFIG (Замените на свои данные)
         // =========================================================
         const firebaseConfig = {
             apiKey: "AIzaSyAcYMr_VmmeZm0f_SJo4plm-wOAmhKuZpU",
@@ -237,7 +237,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- СОСТОЯНИЕ ПРИЛОЖЕНИЯ (Единый объект) ---
         let appState = {
             car: { make: '', year: '', plate: '', mileage: 0 },
             services: [],
@@ -257,26 +256,95 @@
             setTimeout(() => t.classList.add('hidden'), 3500);
         };
 
+        // --- ОТКРЫТИЕ МОДАЛОК (с подгрузкой данных) ---
+        window.openCarModal = () => {
+            document.getElementById('car-make').value = appState.car.make || '';
+            document.getElementById('car-year').value = appState.car.year || '';
+            document.getElementById('car-plate').value = appState.car.plate || '';
+            document.getElementById('car-mileage').value = appState.car.mileage || '';
+            document.getElementById('carModal').showModal();
+        };
+
+        window.openServiceModal = (id = null) => {
+            const form = document.getElementById('form-service');
+            form.reset();
+            document.getElementById('srv-id').value = '';
+            document.getElementById('srv-date').valueAsDate = new Date();
+            document.getElementById('srv-modal-title').innerText = 'Новая запись о ТО';
+
+            if (id) {
+                const s = appState.services.find(x => x.id === id);
+                if (s) {
+                    document.getElementById('srv-modal-title').innerText = 'Редактировать ТО';
+                    document.getElementById('srv-id').value = s.id;
+                    document.getElementById('srv-date').value = s.date;
+                    document.getElementById('srv-type').value = s.type;
+                    document.getElementById('srv-mileage').value = s.mileage;
+                    document.getElementById('srv-cost').value = s.cost;
+                }
+            }
+            document.getElementById('serviceModal').showModal();
+        };
+
+        window.openFuelModal = (id = null) => {
+            const form = document.getElementById('form-fuel');
+            form.reset();
+            document.getElementById('fl-id').value = '';
+            document.getElementById('fl-date').valueAsDate = new Date();
+            document.getElementById('fl-modal-title').innerText = 'Новая заправка';
+
+            if (id) {
+                const f = appState.fuelings.find(x => x.id === id);
+                if (f) {
+                    document.getElementById('fl-modal-title').innerText = 'Редактировать заправку';
+                    document.getElementById('fl-id').value = f.id;
+                    document.getElementById('fl-date').value = f.date;
+                    document.getElementById('fl-mileage').value = f.mileage;
+                    document.getElementById('fl-liters').value = f.liters;
+                    document.getElementById('fl-cost').value = f.cost;
+                    document.getElementById('fl-full').checked = f.isFull;
+                }
+            }
+            document.getElementById('fuelModal').showModal();
+        };
+
+        window.openReminderModal = (id = null) => {
+            const form = document.getElementById('form-reminder');
+            form.reset();
+            document.getElementById('rem-id').value = '';
+            document.getElementById('rem-modal-title').innerText = 'Новое напоминание';
+
+            if (id) {
+                const r = appState.reminders.find(x => x.id === id);
+                if (r) {
+                    document.getElementById('rem-modal-title').innerText = 'Редактировать напоминание';
+                    document.getElementById('rem-id').value = r.id;
+                    document.getElementById('rem-title').value = r.title;
+                    document.getElementById('rem-mileage').value = r.mileage;
+                }
+            }
+            document.getElementById('reminderModal').showModal();
+        };
+
         // --- СОХРАНЕНИЕ / ЗАГРУЗКА ДАННЫХ ---
         async function saveData(btnElement = null) {
             let originalText = '';
             if (btnElement) {
                 const span = btnElement.querySelector('.btn-text');
-                originalText = span.innerText;
-                span.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                if(span) {
+                    originalText = span.innerText;
+                    span.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                }
                 btnElement.disabled = true;
             }
 
-            // 1. Всегда сохраняем локально (Offline-first)
             localStorage.setItem('autoBookState', JSON.stringify(appState));
 
-            // 2. Пробуем сохранить в облако
             if (currentUser) {
                 try {
                     await setDoc(doc(db, "userData", currentUser.uid), appState);
                     showToast('Сохранено в облако');
                 } catch (e) {
-                    console.error("Firebase Error:", e);
                     showToast('Сохранено локально (ошибка связи)', 'warning');
                 }
             } else {
@@ -284,24 +352,23 @@
             }
 
             if (btnElement) {
-                btnElement.querySelector('.btn-text').innerText = originalText;
+                const span = btnElement.querySelector('.btn-text');
+                if(span) span.innerText = originalText;
                 btnElement.disabled = false;
             }
             updateUI();
         }
 
         async function loadData() {
-            // Грузим локалку как бэкап
             const local = localStorage.getItem('autoBookState');
             if (local) appState = JSON.parse(local);
 
-            // Если авторизован, берем актуальное из базы
             if (currentUser) {
                 try {
                     const docSnap = await getDoc(doc(db, "userData", currentUser.uid));
                     if (docSnap.exists()) {
                         appState = docSnap.data();
-                        localStorage.setItem('autoBookState', JSON.stringify(appState)); // синхронизируем
+                        localStorage.setItem('autoBookState', JSON.stringify(appState));
                     }
                 } catch (e) {
                     showToast('Не удалось загрузить из облака. Показаны локальные данные.', 'warning');
@@ -334,7 +401,6 @@
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-pass').value;
             try {
-                // Пытаемся войти. Если нет аккаунта - регистрируем.
                 try {
                     await signInWithEmailAndPassword(auth, email, pass);
                 } catch (err) {
@@ -353,45 +419,43 @@
 
         document.getElementById('btn-logout').onclick = () => signOut(auth);
 
-        // --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА И РАСЧЕТЫ ---
+        // --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ---
         function updateUI() {
-            // 1. Шапка авто
             document.getElementById('display-car-name').innerText = appState.car.make || 'Мой Автомобиль';
             document.getElementById('display-car-details').innerText = `${appState.car.year || ''} ${appState.car.plate ? `| Гос.номер: ${appState.car.plate}` : ''}`;
             document.getElementById('display-mileage').innerText = appState.car.mileage.toLocaleString();
 
-            // 2. Сводка (Расчеты)
             let totalCost = appState.services.reduce((acc, s) => acc + Number(s.cost), 0) + 
                             appState.fuelings.reduce((acc, f) => acc + Number(f.cost), 0);
             document.getElementById('dash-total-cost').innerText = `${totalCost.toLocaleString()} ₽`;
 
-            // Расчет расхода (нужно мин 2 заправки "до полного")
             let fullTanks = appState.fuelings.filter(f => f.isFull).sort((a,b) => new Date(a.date) - new Date(b.date));
             if (fullTanks.length > 1) {
                 let first = fullTanks[0];
                 let last = fullTanks[fullTanks.length - 1];
                 let dist = last.mileage - first.mileage;
-                // Считаем все литры со второй по последнюю заправку
                 let liters = fullTanks.slice(1).reduce((acc, f) => acc + Number(f.liters), 0);
                 if (dist > 0) {
                     document.getElementById('dash-avg-fuel').innerHTML = `${((liters / dist) * 100).toFixed(1)} <span class="text-sm font-normal text-slate-500">л/100км</span>`;
                 }
+            } else {
+                document.getElementById('dash-avg-fuel').innerHTML = `0 <span class="text-sm font-normal text-slate-500">л/100км</span>`;
             }
 
-            // Напоминания
             let activeRems = appState.reminders.filter(r => r.mileage - appState.car.mileage <= 500);
             document.getElementById('dash-reminders-count').innerText = activeRems.length;
             if (activeRems.length > 0) document.getElementById('dash-reminders-count').classList.add('text-red-500');
+            else document.getElementById('dash-reminders-count').classList.remove('text-red-500');
 
-            // 3. Рендер списков
             renderList('list-services', appState.services, s => `
                 <div class="p-4 flex justify-between items-center hover:bg-slate-50 transition">
                     <div>
                         <p class="font-bold text-slate-800">${s.type}</p>
                         <p class="text-xs text-slate-500">${s.date} • Пробег: ${s.mileage} км</p>
                     </div>
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3">
                         <span class="font-bold text-slate-800">${Number(s.cost).toLocaleString()} ₽</span>
+                        <button onclick="openServiceModal(${s.id})" class="text-blue-400 hover:text-blue-600"><i class="fas fa-pen"></i></button>
                         <button onclick="deleteItem('services', ${s.id})" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
@@ -403,8 +467,9 @@
                         <p class="font-bold text-slate-800">${f.liters} л. ${f.isFull ? '<span class="bg-blue-100 text-blue-600 text-[10px] px-2 py-0.5 rounded uppercase ml-1">Полный</span>' : ''}</p>
                         <p class="text-xs text-slate-500">${f.date} • Пробег: ${f.mileage} км</p>
                     </div>
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3">
                         <span class="font-bold text-slate-800">${Number(f.cost).toLocaleString()} ₽</span>
+                        <button onclick="openFuelModal(${f.id})" class="text-blue-400 hover:text-blue-600"><i class="fas fa-pen"></i></button>
                         <button onclick="deleteItem('fuelings', ${f.id})" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
@@ -419,7 +484,10 @@
                         <p class="font-bold text-slate-800">${r.title}</p>
                         <p class="text-xs ${isUrgent ? 'text-red-500 font-bold' : 'text-slate-500'}">Запланировано на: ${r.mileage} км (Осталось: ${left > 0 ? left : 0} км)</p>
                     </div>
-                    <button onclick="deleteItem('reminders', ${r.id})" class="text-slate-400 hover:text-red-600"><i class="fas fa-check-circle fa-xl"></i></button>
+                    <div class="flex items-center gap-3">
+                        <button onclick="openReminderModal(${r.id})" class="text-blue-400 hover:text-blue-600"><i class="fas fa-pen"></i></button>
+                        <button onclick="deleteItem('reminders', ${r.id})" class="text-slate-400 hover:text-emerald-500" title="Выполнено"><i class="fas fa-check-circle fa-xl"></i></button>
+                    </div>
                 </div>
             `});
 
@@ -432,12 +500,10 @@
                 el.innerHTML = '<div class="p-6 text-center text-slate-400"><i class="fas fa-inbox fa-2x mb-2"></i><br>Нет записей</div>';
                 return;
             }
-            // Сортируем по дате или пробегу по убыванию
             const sorted = [...dataArray].sort((a,b) => (b.date ? new Date(b.date) : b.mileage) - (a.date ? new Date(a.date) : a.mileage));
             el.innerHTML = sorted.map(templateFn).join('');
         }
 
-        // Удаление элемента
         window.deleteItem = async (collection, id) => {
             if(confirm('Удалить запись?')) {
                 appState[collection] = appState[collection].filter(i => i.id !== id);
@@ -446,8 +512,6 @@
         };
 
         // --- ОБРАБОТЧИКИ ФОРМ ---
-        
-        // Автомобиль
         document.getElementById('form-car').onsubmit = async (e) => {
             e.preventDefault();
             appState.car = {
@@ -460,49 +524,73 @@
             document.getElementById('carModal').close();
         };
 
-        // ТО
         document.getElementById('form-service').onsubmit = async (e) => {
             e.preventDefault();
-            let m = Number(document.getElementById('srv-mileage').value);
-            appState.services.push({
-                id: Date.now(),
+            const idVal = document.getElementById('srv-id').value;
+            const m = Number(document.getElementById('srv-mileage').value);
+            const newData = {
+                id: idVal ? Number(idVal) : Date.now(),
                 date: document.getElementById('srv-date').value,
                 type: document.getElementById('srv-type').value,
                 mileage: m,
                 cost: Number(document.getElementById('srv-cost').value)
-            });
+            };
+
+            if (idVal) {
+                const idx = appState.services.findIndex(x => x.id === Number(idVal));
+                if(idx !== -1) appState.services[idx] = newData;
+            } else {
+                appState.services.push(newData);
+            }
+
             if (m > appState.car.mileage) appState.car.mileage = m;
             await saveData(e.target.querySelector('button[type="submit"]'));
-            e.target.reset(); document.getElementById('serviceModal').close();
+            document.getElementById('serviceModal').close();
         };
 
-        // Заправка
         document.getElementById('form-fuel').onsubmit = async (e) => {
             e.preventDefault();
-            let m = Number(document.getElementById('fl-mileage').value);
-            appState.fuelings.push({
-                id: Date.now(),
+            const idVal = document.getElementById('fl-id').value;
+            const m = Number(document.getElementById('fl-mileage').value);
+            const newData = {
+                id: idVal ? Number(idVal) : Date.now(),
                 date: document.getElementById('fl-date').value,
                 mileage: m,
                 liters: Number(document.getElementById('fl-liters').value),
                 cost: Number(document.getElementById('fl-cost').value),
                 isFull: document.getElementById('fl-full').checked
-            });
+            };
+
+            if (idVal) {
+                const idx = appState.fuelings.findIndex(x => x.id === Number(idVal));
+                if(idx !== -1) appState.fuelings[idx] = newData;
+            } else {
+                appState.fuelings.push(newData);
+            }
+
             if (m > appState.car.mileage) appState.car.mileage = m;
             await saveData(e.target.querySelector('button[type="submit"]'));
-            e.target.reset(); document.getElementById('fuelModal').close();
+            document.getElementById('fuelModal').close();
         };
 
-        // Напоминание
         document.getElementById('form-reminder').onsubmit = async (e) => {
             e.preventDefault();
-            appState.reminders.push({
-                id: Date.now(),
+            const idVal = document.getElementById('rem-id').value;
+            const newData = {
+                id: idVal ? Number(idVal) : Date.now(),
                 title: document.getElementById('rem-title').value,
                 mileage: Number(document.getElementById('rem-mileage').value)
-            });
+            };
+
+            if (idVal) {
+                const idx = appState.reminders.findIndex(x => x.id === Number(idVal));
+                if(idx !== -1) appState.reminders[idx] = newData;
+            } else {
+                appState.reminders.push(newData);
+            }
+
             await saveData(e.target.querySelector('button[type="submit"]'));
-            e.target.reset(); document.getElementById('reminderModal').close();
+            document.getElementById('reminderModal').close();
         };
 
         // --- ВКЛАДКИ ---
@@ -522,15 +610,10 @@
             });
         });
 
-        // --- УСТАНОВКА ДАТ ПО УМОЛЧАНИЮ ---
-        document.getElementById('srv-date').valueAsDate = new Date();
-        document.getElementById('fl-date').valueAsDate = new Date();
-
-        // --- ГРАФИКИ (Chart.js) ---
+        // --- ГРАФИКИ ---
         function updateCharts() {
             if (document.getElementById('tab-stats').classList.contains('hidden')) return;
 
-            // 1. Пончик (Доли затрат)
             const sumSrv = appState.services.reduce((a, b) => a + Number(b.cost), 0);
             const sumFl = appState.fuelings.reduce((a, b) => a + Number(b.cost), 0);
             
@@ -544,7 +627,6 @@
                 options: { plugins: { legend: { position: 'bottom' } } }
             });
 
-            // 2. Линейный (Расход топлива)
             let fuelData = [];
             let labels = [];
             let fullTanks = appState.fuelings.filter(f => f.isFull).sort((a,b) => new Date(a.date) - new Date(b.date));
