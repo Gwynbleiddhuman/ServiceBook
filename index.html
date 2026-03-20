@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Сервисная книжка автомобиля</title>
-    <!-- Bootstrap 5 + иконки Font Awesome + Chart.js -->
+    <title>ServiceBookCar - Сервисная книжка автомобиля</title>
+    <!-- Bootstrap + FontAwesome + Chart.js -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -18,21 +18,30 @@
         .stats-number { font-size: 2.2rem; font-weight: 700; color: #1e293b; }
         .stats-label { color: #64748b; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
         .btn-circle { border-radius: 40px; padding: 10px 24px; }
-        .reminder-badge { background: #fff3cd; color: #856404; padding: 5px 12px; border-radius: 30px; font-size: 0.85rem; }
-        .mileage-input { max-width: 200px; display: inline-block; }
         .list-group-item { border-left: none; border-right: none; border-radius: 0 !important; background: transparent; }
         .list-group-item:first-child { border-top: none; }
         .chart-container { height: 250px; margin-top: 20px; }
         .small-text { font-size: 0.85rem; color: #6c757d; }
         .hover-bg:hover { background-color: #f1f5f9; }
         .fab-button { position: fixed; bottom: 30px; right: 30px; z-index: 100; }
+        #authSection { background: #e9f0fe; padding: 12px 20px; border-radius: 50px; display: inline-flex; align-items: center; gap: 15px; }
         @media (max-width: 768px) { .container-custom { padding: 15px; } }
     </style>
+    <!-- Импорт карты для Firebase модулей -->
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
+            }
+        }
+    </script>
 </head>
 <body>
 
 <div class="container-custom">
-    <!-- Шапка с основными данными авто -->
+    <!-- Шапка с авто и блоком аутентификации -->
     <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
         <div class="d-flex align-items-center gap-3">
             <i class="fas fa-car fa-2x text-primary"></i>
@@ -41,18 +50,24 @@
                 <span class="text-secondary" id="carDetails"></span>
             </div>
         </div>
-        <div class="d-flex gap-3 mt-2 mt-sm-0">
-            <div class="text-end">
+        <div class="d-flex gap-3 mt-2 mt-sm-0 align-items-center">
+            <div class="text-end me-2">
                 <div class="stats-label">Текущий пробег</div>
                 <div class="d-flex align-items-center">
                     <span class="stats-number me-2" id="currentMileageDisplay">0</span> <span class="text-secondary">км</span>
                 </div>
             </div>
+            <!-- Блок пользователя -->
+            <div id="authSection" class="d-flex align-items-center">
+                <span id="userEmailDisplay" class="fw-bold me-2"></span>
+                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#authModal" id="authButton">Войти</button>
+                <button class="btn btn-sm btn-outline-danger" id="logoutBtn" style="display: none;">Выйти</button>
+            </div>
             <button class="btn btn-outline-primary btn-circle" data-bs-toggle="modal" data-bs-target="#editCarModal"><i class="fas fa-pen me-2"></i>Изменить</button>
         </div>
     </div>
 
-    <!-- Вкладки -->
+    <!-- Вкладки (без изменений) -->
     <ul class="nav nav-tabs" id="mainTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button"><i class="fas fa-chart-pie me-2"></i>Главная</button>
@@ -71,7 +86,7 @@
         </li>
     </ul>
 
-    <!-- Содержимое вкладок -->
+    <!-- Содержимое вкладок (полностью идентично вашему) -->
     <div class="tab-content" id="mainTabContent">
         <!-- ГЛАВНАЯ -->
         <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
@@ -171,8 +186,35 @@
     </div>
 </div>
 
-<!-- Модальные окна -->
+<!-- Модальное окно авторизации -->
+<div class="modal fade" id="authModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Вход / Регистрация</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" id="authEmail" placeholder="email@example.com">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Пароль</label>
+                    <input type="password" class="form-control" id="authPassword" placeholder="••••••••">
+                </div>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary" id="loginBtn">Войти</button>
+                    <button class="btn btn-outline-primary" id="registerBtn">Зарегистрироваться</button>
+                    <button class="btn btn-outline-danger" id="googleLoginBtn">Войти через Google</button>
+                </div>
+                <div id="authMessage" class="mt-3 small text-danger"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
+<!-- Остальные модальные окна (без изменений, они уже есть в вашем коде) -->
 <!-- Редактирование авто -->
 <div class="modal fade" id="editCarModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
@@ -289,50 +331,144 @@
     </div>
 </div>
 
-<!-- Кнопка быстрого добавления (плавающая) -->
+<!-- Кнопка быстрого добавления -->
 <button class="btn btn-primary fab-button" data-bs-toggle="modal" data-bs-target="#addFuelingModal"><i class="fas fa-plus"></i> Заправка</button>
 
-<script>
-    // --------------------------------------------------------------
-    // Модель данных и работа с localStorage
-    // --------------------------------------------------------------
+<!-- Подключение Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Основной скрипт с Firebase (модуль) -->
+<script type="module">
+    // Импортируем Firebase
+    import { initializeApp } from 'firebase/app';
+    import { 
+        getAuth, 
+        signInWithEmailAndPassword, 
+        createUserWithEmailAndPassword,
+        signOut,
+        onAuthStateChanged,
+        GoogleAuthProvider,
+        signInWithPopup
+    } from 'firebase/auth';
+    import { 
+        getFirestore, 
+        doc, 
+        setDoc, 
+        getDoc,
+        enableIndexedDbPersistence 
+    } from 'firebase/firestore';
+
+    // ⚠️ ВСТАВЬТЕ СВОИ ДАННЫЕ ИЗ FIREBASE ⚠️
+    const firebaseConfig = {
+        apiKey: "AIzaSyAcYMr_VmmeZm0f_SJo4plm-wOAmhKuZpU",
+        authDomain: "servicecarbook.firebaseapp.com",
+        projectId: "servicecarbook",
+        storageBucket: "servicecarbook.firebasestorage.app",
+        messagingSenderId: "321524196690",
+        appId: "1:321524196690:web:4d3fe9df49b4ed2cc3068b",
+        measurementId: "G-DMGBWSE38R"
+    };
+
+    // Инициализация Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Включаем офлайн-персистентность (данные кешируются локально)
+    enableIndexedDbPersistence(db).catch((err) => {
+        console.warn('Offline persistence failed:', err);
+    });
+
+    // Провайдер для Google
+    const googleProvider = new GoogleAuthProvider();
+
+    // ------------------- Состояние приложения -------------------
     let appState = {
-        car: {
-            makeModel: '',
-            year: null,
-            plate: '',
-            vin: '',
-            currentMileage: 0
-        },
+        car: { makeModel: '', year: null, plate: '', vin: '', currentMileage: 0 },
         services: [],
         fuelings: [],
         reminders: []
     };
 
-    // Загрузка из localStorage
-    function loadState() {
+    // Текущий пользователь (null если гость)
+    let currentUser = null;
+
+    // Флаг, чтобы не сохранять в Firestore при загрузке данных
+    let isLoadingFromFirestore = false;
+
+    // ------------------- Функции работы с данными -------------------
+    // Загрузка из localStorage (для гостя)
+    function loadFromLocalStorage() {
         const saved = localStorage.getItem('carServiceBook');
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
                 appState = { ...appState, ...parsed };
-                // убедимся, что поля авто не undefined
                 if (!appState.car) appState.car = { makeModel: '', year: null, plate: '', vin: '', currentMileage: 0 };
             } catch (e) {}
         } else {
-            // Без демо-данных, только пустые массивы (авто пустое)
             appState.services = [];
             appState.fuelings = [];
             appState.reminders = [];
         }
+        updateUI();
     }
 
-    function saveState() {
+    // Сохранение в localStorage (для гостя)
+    function saveToLocalStorage() {
         localStorage.setItem('carServiceBook', JSON.stringify(appState));
         updateUI();
     }
 
-    // Обновление всех элементов интерфейса
+    // Загрузка из Firestore (для авторизованного)
+    async function loadFromFirestore(uid) {
+        isLoadingFromFirestore = true;
+        try {
+            const docRef = doc(db, 'userData', uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                appState = docSnap.data();
+            } else {
+                // Новый пользователь — создаём документ с пустыми данными
+                appState = {
+                    car: { makeModel: '', year: null, plate: '', vin: '', currentMileage: 0 },
+                    services: [],
+                    fuelings: [],
+                    reminders: []
+                };
+                await setDoc(docRef, appState);
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки из Firestore:', error);
+            // Если ошибка, пробуем взять из localStorage как fallback
+            loadFromLocalStorage();
+        }
+        isLoadingFromFirestore = false;
+        updateUI();
+    }
+
+    // Сохранение в Firestore (если пользователь залогинен)
+    async function saveToFirestore() {
+        if (!currentUser) return;
+        try {
+            const docRef = doc(db, 'userData', currentUser.uid);
+            await setDoc(docRef, appState);
+        } catch (error) {
+            console.error('Ошибка сохранения в Firestore:', error);
+        }
+    }
+
+    // Основная функция сохранения (вызывается после изменений)
+    async function saveState() {
+        if (currentUser && !isLoadingFromFirestore) {
+            await saveToFirestore();
+        } else {
+            saveToLocalStorage();
+        }
+        updateUI(); // обновление UI уже есть внутри saveToLocalStorage, но для единообразия вызовем ещё
+    }
+
+    // Обновление UI (ваша原有 функция, немного модифицирована)
     function updateUI() {
         // шапка
         document.getElementById('carDisplay').innerText = appState.car.makeModel || '—';
@@ -343,13 +479,12 @@
         document.getElementById('carDetails').innerText = details.join(' • ');
         document.getElementById('currentMileageDisplay').innerText = appState.car.currentMileage ? appState.car.currentMileage.toLocaleString() : '0';
 
-        // главная: последняя заправка
+        // главная
         if (appState.fuelings.length) {
             const lastF = [...appState.fuelings].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
             document.getElementById('lastFuelDate').innerText = new Date(lastF.date).toLocaleDateString('ru-RU');
             document.getElementById('lastFuelAmount').innerText = lastF.liters + ' л · ';
             document.getElementById('lastFuelCost').innerText = lastF.totalCost + ' ₽';
-            // средний расход
             if (appState.fuelings.length > 1) {
                 const sorted = [...appState.fuelings].sort((a,b)=>new Date(a.date)-new Date(b.date));
                 let totalLiters = 0, totalKm = 0;
@@ -375,7 +510,6 @@
             document.getElementById('avgConsumption').innerHTML = '— <small>л/100км</small>';
         }
 
-        // последнее ТО
         if (appState.services.length) {
             const lastS = [...appState.services].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
             document.getElementById('lastServiceDate').innerText = new Date(lastS.date).toLocaleDateString('ru-RU');
@@ -385,20 +519,17 @@
             document.getElementById('lastServiceDesc').innerText = '';
         }
 
-        // общие затраты
         const total = [...appState.services, ...appState.fuelings].reduce((acc,cur)=> acc + (cur.cost || cur.totalCost || 0),0);
         document.getElementById('totalCosts').innerText = total.toLocaleString() + ' ₽';
 
-        // списки
         renderServices();
         renderFuelings();
         renderReminders();
 
-        // графики обновим при активной вкладке статистики
         if (document.getElementById('stats').classList.contains('active')) updateCharts();
     }
 
-    // Рендер списка обслуживания с кнопками редактирования
+    // Рендеры (ваши, без изменений)
     function renderServices() {
         const container = document.getElementById('servicesList');
         if (!appState.services.length) { container.innerHTML = '<div class="text-secondary p-3">Нет записей</div>'; return; }
@@ -458,7 +589,6 @@
                 </div>
             </div>`;
         }).join('');
-        // превью на главной
         preview.innerHTML = active.slice(0,3).map(r => {
             let due = '';
             if (r.dueMileage) due = `через ${r.dueMileage - appState.car.currentMileage} км`;
@@ -468,12 +598,12 @@
         }).join('') || '<li class="small-text">Нет активных</li>';
     }
 
-    // Удаление
+    // Удаление (переопределим для работы с saveState)
     window.deleteService = (id) => { appState.services = appState.services.filter(s => s.id != id); saveState(); };
     window.deleteFueling = (id) => { appState.fuelings = appState.fuelings.filter(f => f.id != id); saveState(); };
     window.deleteReminder = (id) => { appState.reminders = appState.reminders.filter(r => r.id != id); saveState(); };
 
-    // Редактирование: открыть модалку с данными
+    // Редактирование (без изменений)
     window.editService = (id) => {
         const service = appState.services.find(s => s.id == id);
         if (!service) return;
@@ -516,18 +646,18 @@
     };
 
     // Сохранение авто
-    document.getElementById('saveCarBtn').addEventListener('click', ()=>{
+    document.getElementById('saveCarBtn').addEventListener('click', async () => {
         appState.car.makeModel = document.getElementById('carMakeModel').value;
         appState.car.year = parseInt(document.getElementById('carYear').value) || null;
         appState.car.plate = document.getElementById('carPlate').value;
         appState.car.vin = document.getElementById('carVin').value;
         appState.car.currentMileage = parseInt(document.getElementById('carMileage').value) || 0;
-        saveState();
+        await saveState();
         bootstrap.Modal.getInstance(document.getElementById('editCarModal')).hide();
     });
 
-    // Сохранение обслуживания (добавление или редактирование)
-    document.getElementById('saveServiceBtn').addEventListener('click', ()=>{
+    // Сохранение обслуживания
+    document.getElementById('saveServiceBtn').addEventListener('click', async () => {
         const id = document.getElementById('serviceId').value;
         const serviceData = {
             id: id ? Number(id) : Date.now(),
@@ -538,13 +668,12 @@
             notes: document.getElementById('serviceNotes').value
         };
         if (id) {
-            // редактирование
             const index = appState.services.findIndex(s => s.id == id);
             if (index !== -1) appState.services[index] = serviceData;
         } else {
             appState.services.push(serviceData);
         }
-        saveState();
+        await saveState();
         bootstrap.Modal.getInstance(document.getElementById('addServiceModal')).hide();
         document.getElementById('serviceForm').reset();
         document.getElementById('serviceId').value = '';
@@ -559,7 +688,7 @@
         const p = parseFloat(document.getElementById('fuelPrice').value) || 0;
         document.getElementById('fuelTotal').value = (l * p).toFixed(2);
     }
-    document.getElementById('saveFuelingBtn').addEventListener('click', ()=>{
+    document.getElementById('saveFuelingBtn').addEventListener('click', async () => {
         const id = document.getElementById('fuelingId').value;
         const fuelData = {
             id: id ? Number(id) : Date.now(),
@@ -579,7 +708,7 @@
         } else {
             appState.fuelings.push(fuelData);
         }
-        saveState();
+        await saveState();
         bootstrap.Modal.getInstance(document.getElementById('addFuelingModal')).hide();
         document.getElementById('fuelingForm').reset();
         document.getElementById('fuelTotal').value = '';
@@ -588,7 +717,7 @@
     });
 
     // Сохранение напоминания
-    document.getElementById('saveReminderBtn').addEventListener('click', ()=>{
+    document.getElementById('saveReminderBtn').addEventListener('click', async () => {
         const id = document.getElementById('reminderId').value;
         const reminderData = {
             id: id ? Number(id) : Date.now(),
@@ -606,14 +735,14 @@
         } else {
             appState.reminders.push(reminderData);
         }
-        saveState();
+        await saveState();
         bootstrap.Modal.getInstance(document.getElementById('addReminderModal')).hide();
         document.getElementById('reminderForm').reset();
         document.getElementById('reminderId').value = '';
         document.getElementById('reminderModalTitle').innerText = 'Новое напоминание';
     });
 
-    // Графики
+    // Графики (ваши, без изменений)
     let monthlyChart, categoryChart, fuelChart;
     function updateCharts() {
         if (monthlyChart) monthlyChart.destroy();
@@ -649,14 +778,14 @@
         });
     }
 
-    // переключение вкладок для обновления графиков
+    // Переключение вкладок для графиков
     document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(btn => {
         btn.addEventListener('shown.bs.tab', (e) => {
             if (e.target.id === 'stats-tab') updateCharts();
         });
     });
 
-    // Экспорт / импорт
+    // Экспорт / импорт (работают с текущим appState)
     document.getElementById('exportData').addEventListener('click', ()=>{
         const dataStr = JSON.stringify(appState, null, 2);
         const blob = new Blob([dataStr], {type: 'application/json'});
@@ -674,39 +803,77 @@
             try {
                 const imported = JSON.parse(ev.target.result);
                 appState = imported;
-                saveState();
-                alert('Данные импортированы');
-                location.reload();
+                saveState().then(() => {
+                    alert('Данные импортированы');
+                    location.reload();
+                });
             } catch (ex) { alert('Ошибка импорта'); }
         };
         reader.readAsText(file);
     });
 
-    // Инициализация
-    loadState();
-    saveState();
+    // ------------------- Аутентификация -------------------
+    const authButton = document.getElementById('authButton');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const userEmailDisplay = document.getElementById('userEmailDisplay');
+    const authModalEl = document.getElementById('authModal');
+    const authModal = new bootstrap.Modal(authModalEl);
 
-    // Если данные авто не заполнены (нет марки), показываем модальное окно при загрузке
-    window.addEventListener('load', function() {
-        if (!appState.car.makeModel) {
-            const carModal = new bootstrap.Modal(document.getElementById('editCarModal'), {
-                backdrop: 'static',
-                keyboard: false
-            });
-            carModal.show();
+    // Кнопки входа/регистрации
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+        const email = document.getElementById('authEmail').value;
+        const password = document.getElementById('authPassword').value;
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            authModal.hide();
+        } catch (error) {
+            document.getElementById('authMessage').innerText = error.message;
         }
     });
 
-    // Заполнение модалки авто при открытии
-    document.getElementById('editCarModal').addEventListener('show.bs.modal', function() {
-        document.getElementById('carMakeModel').value = appState.car.makeModel || '';
-        document.getElementById('carYear').value = appState.car.year || '';
-        document.getElementById('carPlate').value = appState.car.plate || '';
-        document.getElementById('carVin').value = appState.car.vin || '';
-        document.getElementById('carMileage').value = appState.car.currentMileage || 0;
+    document.getElementById('registerBtn').addEventListener('click', async () => {
+        const email = document.getElementById('authEmail').value;
+        const password = document.getElementById('authPassword').value;
+        try {
+            await createUserWithEmailAndPassword(auth, email, password);
+            authModal.hide();
+        } catch (error) {
+            document.getElementById('authMessage').innerText = error.message;
+        }
     });
 
-    // Сброс модалок при закрытии (чтобы очистить скрытые поля)
+    document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+        try {
+            await signInWithPopup(auth, googleProvider);
+            authModal.hide();
+        } catch (error) {
+            document.getElementById('authMessage').innerText = error.message;
+        }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+        await signOut(auth);
+    });
+
+    // Слушаем состояние аутентификации
+    onAuthStateChanged(auth, async (user) => {
+        currentUser = user;
+        if (user) {
+            // Пользователь вошёл
+            userEmailDisplay.textContent = user.email;
+            authButton.style.display = 'none';
+            logoutBtn.style.display = 'inline-block';
+            await loadFromFirestore(user.uid);
+        } else {
+            // Гость
+            userEmailDisplay.textContent = '';
+            authButton.style.display = 'inline-block';
+            logoutBtn.style.display = 'none';
+            loadFromLocalStorage();
+        }
+    });
+
+    // Сброс модалок
     document.getElementById('addServiceModal').addEventListener('hidden.bs.modal', function() {
         document.getElementById('serviceForm').reset();
         document.getElementById('serviceId').value = '';
@@ -723,9 +890,26 @@
         document.getElementById('reminderId').value = '';
         document.getElementById('reminderModalTitle').innerText = 'Новое напоминание';
     });
-</script>
 
-<!-- Подключение Bootstrap JS (для модалок) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    // При загрузке страницы показываем модалку авто, если поле пустое (только для гостя, для пользователя данные уже подгрузятся)
+    window.addEventListener('load', function() {
+        if (!appState.car.makeModel && !currentUser) {
+            const carModal = new bootstrap.Modal(document.getElementById('editCarModal'), {
+                backdrop: 'static',
+                keyboard: false
+            });
+            carModal.show();
+        }
+    });
+
+    // Заполнение модалки авто
+    document.getElementById('editCarModal').addEventListener('show.bs.modal', function() {
+        document.getElementById('carMakeModel').value = appState.car.makeModel || '';
+        document.getElementById('carYear').value = appState.car.year || '';
+        document.getElementById('carPlate').value = appState.car.plate || '';
+        document.getElementById('carVin').value = appState.car.vin || '';
+        document.getElementById('carMileage').value = appState.car.currentMileage || 0;
+    });
+</script>
 </body>
 </html>
