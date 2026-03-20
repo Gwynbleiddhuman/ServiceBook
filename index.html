@@ -135,15 +135,17 @@
 
     <dialog id="authModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-sm m-auto top-1/2 -translate-y-1/2">
         <div class="p-6">
-            <h3 class="text-xl font-bold mb-4 text-center">Авторизация</h3>
-            <p class="text-sm text-slate-500 mb-4 text-center">Войдите, чтобы синхронизировать данные</p>
+            <div class="flex mb-4 gap-2 border-b">
+                <button id="tab-login-btn" type="button" class="flex-1 text-blue-600 font-bold border-b-2 border-blue-600 pb-2 transition">Вход</button>
+                <button id="tab-reg-btn" type="button" class="flex-1 text-slate-400 font-bold pb-2 transition">Регистрация</button>
+            </div>
             <form id="form-auth" class="space-y-4">
+                <input type="text" id="auth-name" placeholder="Ваш никнейм" class="w-full border p-3 rounded-lg bg-slate-50 hidden">
                 <input type="email" id="auth-email" required placeholder="Email" class="w-full border p-3 rounded-lg bg-slate-50">
                 <input type="password" id="auth-pass" required placeholder="Пароль" class="w-full border p-3 rounded-lg bg-slate-50">
-                <div class="flex flex-col gap-2 mt-2">
-                    <button type="button" id="btn-login-submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 transition">Войти</button>
-                    <button type="button" id="btn-register-submit" class="w-full bg-slate-100 text-slate-700 p-3 rounded-lg font-bold hover:bg-slate-200 transition">Создать аккаунт</button>
-                </div>
+                
+                <button type="button" id="btn-login-submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 transition">Войти</button>
+                <button type="button" id="btn-register-submit" class="w-full bg-emerald-600 text-white p-3 rounded-lg font-bold hover:bg-emerald-700 transition hidden">Создать аккаунт</button>
             </form>
             <button onclick="authModal.close()" class="w-full mt-4 p-2 text-slate-400 hover:text-slate-600">Закрыть</button>
         </div>
@@ -227,7 +229,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+        // ДОБАВЛЕН ИМПОРТ updateProfile
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
         // =========================================================
@@ -263,6 +266,44 @@
             t.className = `fixed top-5 right-5 px-6 py-3 rounded-lg shadow-xl z-50 text-white font-medium transition-all ${type === 'error' ? 'bg-red-500' : type === 'warning' ? 'bg-yellow-500' : 'bg-emerald-500'}`;
             t.classList.remove('hidden');
             setTimeout(() => t.classList.add('hidden'), 3500);
+        };
+
+        // --- ЛОГИКА ВКЛАДОК АВТОРИЗАЦИИ ---
+        const tabLoginBtn = document.getElementById('tab-login-btn');
+        const tabRegBtn = document.getElementById('tab-reg-btn');
+        const nameInput = document.getElementById('auth-name');
+        const btnLogin = document.getElementById('btn-login-submit');
+        const btnReg = document.getElementById('btn-register-submit');
+
+        tabLoginBtn.onclick = () => {
+            tabLoginBtn.className = "flex-1 text-blue-600 font-bold border-b-2 border-blue-600 pb-2 transition";
+            tabRegBtn.className = "flex-1 text-slate-400 font-bold pb-2 transition";
+            nameInput.classList.add('hidden');
+            btnLogin.classList.remove('hidden');
+            btnReg.classList.add('hidden');
+        };
+
+        tabRegBtn.onclick = () => {
+            tabRegBtn.className = "flex-1 text-blue-600 font-bold border-b-2 border-blue-600 pb-2 transition";
+            tabLoginBtn.className = "flex-1 text-slate-400 font-bold pb-2 transition";
+            nameInput.classList.remove('hidden');
+            btnLogin.classList.add('hidden');
+            btnReg.classList.remove('hidden');
+        };
+
+        // --- СМЕНА НИКНЕЙМА КЛИКОМ ---
+        window.renameUser = async () => {
+            if (!currentUser) return;
+            const newName = prompt('Введите новый никнейм:', currentUser.displayName || '');
+            if (newName && newName.trim() !== '') {
+                try {
+                    await updateProfile(currentUser, { displayName: newName.trim() });
+                    document.getElementById('user-info').innerHTML = `<i class="fas fa-cloud text-blue-300"></i> <span class="cursor-pointer border-b border-dashed hover:text-blue-200" onclick="renameUser()" title="Нажмите, чтобы изменить имя">${newName.trim()}</span>`;
+                    showToast('Никнейм обновлен!');
+                } catch (e) {
+                    showToast('Ошибка при обновлении', 'error');
+                }
+            }
         };
 
         // --- ОТКРЫТИЕ МОДАЛОК ---
@@ -390,12 +431,15 @@
             updateUI();
         }
 
-        // --- АВТОРИЗАЦИЯ (ИЗМЕНЕНО) ---
+        // --- АВТОРИЗАЦИЯ И ВЫХОД ---
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             const uiUser = document.getElementById('user-info');
             if (user) {
-                uiUser.innerHTML = `<i class="fas fa-cloud text-blue-300" title="Облачная синхронизация"></i> ${user.email}`;
+                // Если никнейм есть - показываем его. Если нет - первую часть почты.
+                const displayName = user.displayName || user.email.split('@')[0];
+                uiUser.innerHTML = `<i class="fas fa-cloud text-blue-300"></i> <span class="cursor-pointer border-b border-dashed hover:text-blue-200" onclick="renameUser()" title="Нажмите, чтобы изменить имя">${displayName}</span>`;
+                
                 document.getElementById('btn-auth-open').classList.add('hidden');
                 document.getElementById('btn-logout').classList.remove('hidden');
                 loadData();
@@ -432,16 +476,26 @@
 
         // Логика Регистрации
         document.getElementById('btn-register-submit').onclick = async () => {
+            const nickname = document.getElementById('auth-name').value.trim();
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-pass').value;
+            
+            if(!nickname) return showToast('Пожалуйста, введите никнейм', 'warning');
             if(!email || !pass) return showToast('Введите email и пароль', 'warning');
             
             const btn = document.getElementById('btn-register-submit');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             try {
-                await createUserWithEmailAndPassword(auth, email, pass);
+                // 1. Создаем аккаунт
+                const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+                // 2. Сразу привязываем к нему никнейм
+                await updateProfile(userCredential.user, { displayName: nickname });
+                
                 document.getElementById('authModal').close();
                 showToast('Аккаунт успешно создан!');
+                
+                // Перерисовываем никнейм вручную, чтобы он обновился моментально
+                document.getElementById('user-info').innerHTML = `<i class="fas fa-cloud text-blue-300"></i> <span class="cursor-pointer border-b border-dashed hover:text-blue-200" onclick="renameUser()">${nickname}</span>`;
             } catch (error) {
                 if (error.code === 'auth/email-already-in-use') {
                     showToast('Этот email уже зарегистрирован', 'error');
