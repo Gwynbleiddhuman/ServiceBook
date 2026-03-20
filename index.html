@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceBookCar - Сервисная книжка автомобиля</title>
+    <title>Сервисная книжка автомобиля</title>
     <!-- Bootstrap + FontAwesome + Chart.js -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -24,7 +24,8 @@
         .small-text { font-size: 0.85rem; color: #6c757d; }
         .hover-bg:hover { background-color: #f1f5f9; }
         .fab-button { position: fixed; bottom: 30px; right: 30px; z-index: 100; }
-        #authSection { background: #e9f0fe; padding: 12px 20px; border-radius: 50px; display: inline-flex; align-items: center; gap: 15px; }
+        #authSection { background: #e9f0fe; padding: 8px 16px; border-radius: 40px; display: inline-flex; align-items: center; gap: 12px; }
+        .profile-icon { cursor: pointer; }
         @media (max-width: 768px) { .container-custom { padding: 15px; } }
     </style>
     <!-- Импорт карты для Firebase модулей -->
@@ -41,7 +42,7 @@
 <body>
 
 <div class="container-custom">
-    <!-- Шапка с авто и блоком аутентификации -->
+    <!-- Шапка с авто и блоком пользователя -->
     <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
         <div class="d-flex align-items-center gap-3">
             <i class="fas fa-car fa-2x text-primary"></i>
@@ -59,8 +60,10 @@
             </div>
             <!-- Блок пользователя -->
             <div id="authSection" class="d-flex align-items-center">
-                <span id="userEmailDisplay" class="fw-bold me-2"></span>
-                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#authModal" id="authButton">Войти</button>
+                <span id="userDisplayName" class="fw-bold me-2"></span>
+                <i class="fas fa-user-circle fa-xl profile-icon" id="profileIcon" style="display: none;" data-bs-toggle="modal" data-bs-target="#profileModal"></i>
+                <button class="btn btn-sm btn-outline-primary" id="loginButton" data-bs-toggle="modal" data-bs-target="#loginModal">Войти</button>
+                <button class="btn btn-sm btn-outline-success" id="registerButton" data-bs-toggle="modal" data-bs-target="#registerModal">Регистрация</button>
                 <button class="btn btn-sm btn-outline-danger" id="logoutBtn" style="display: none;">Выйти</button>
             </div>
             <button class="btn btn-outline-primary btn-circle" data-bs-toggle="modal" data-bs-target="#editCarModal"><i class="fas fa-pen me-2"></i>Изменить</button>
@@ -86,7 +89,7 @@
         </li>
     </ul>
 
-    <!-- Содержимое вкладок (полностью идентично вашему) -->
+    <!-- Содержимое вкладок (полностью ваше, без изменений) -->
     <div class="tab-content" id="mainTabContent">
         <!-- ГЛАВНАЯ -->
         <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
@@ -186,29 +189,106 @@
     </div>
 </div>
 
-<!-- Модальное окно авторизации -->
-<div class="modal fade" id="authModal" tabindex="-1">
+<!-- Модальное окно ВХОДА -->
+<div class="modal fade" id="loginModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Вход / Регистрация</h5>
+                <h5 class="modal-title">Вход</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
                     <label class="form-label">Email</label>
-                    <input type="email" class="form-control" id="authEmail" placeholder="email@example.com">
+                    <input type="email" class="form-control" id="loginEmail" placeholder="email@example.com">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Пароль</label>
-                    <input type="password" class="form-control" id="authPassword" placeholder="••••••••">
+                    <input type="password" class="form-control" id="loginPassword" placeholder="••••••••">
                 </div>
                 <div class="d-grid gap-2">
                     <button class="btn btn-primary" id="loginBtn">Войти</button>
-                    <button class="btn btn-outline-primary" id="registerBtn">Зарегистрироваться</button>
                     <button class="btn btn-outline-danger" id="googleLoginBtn">Войти через Google</button>
                 </div>
-                <div id="authMessage" class="mt-3 small text-danger"></div>
+                <div id="loginMessage" class="mt-3 small text-danger"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно РЕГИСТРАЦИИ -->
+<div class="modal fade" id="registerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Регистрация</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="registerForm">
+                    <div class="mb-3">
+                        <label class="form-label">Имя *</label>
+                        <input type="text" class="form-control" id="registerFirstName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Фамилия (необязательно)</label>
+                        <input type="text" class="form-control" id="registerLastName">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Никнейм (будет отображаться) *</label>
+                        <input type="text" class="form-control" id="registerNickname" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email *</label>
+                        <input type="email" class="form-control" id="registerEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Пароль * (минимум 6 символов)</label>
+                        <input type="password" class="form-control" id="registerPassword" required>
+                    </div>
+                </form>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success" id="registerBtn">Зарегистрироваться</button>
+                </div>
+                <div id="registerMessage" class="mt-3 small text-danger"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно ПРОФИЛЯ -->
+<div class="modal fade" id="profileModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Профиль пользователя</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" id="profileEmail" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Имя</label>
+                    <input type="text" class="form-control" id="profileFirstName">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Фамилия</label>
+                    <input type="text" class="form-control" id="profileLastName">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Никнейм</label>
+                    <input type="text" class="form-control" id="profileNickname">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Способ входа</label>
+                    <input type="text" class="form-control" id="profileProvider" readonly>
+                </div>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary" id="saveProfileBtn">Сохранить изменения</button>
+                </div>
+                <div id="profileMessage" class="mt-3 small text-success"></div>
             </div>
         </div>
     </div>
@@ -216,7 +296,7 @@
 
 <!-- Остальные модальные окна (без изменений, они уже есть в вашем коде) -->
 <!-- Редактирование авто -->
-<div class="modal fade" id="editCarModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal fade" id="editCarModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -348,7 +428,8 @@
         signOut,
         onAuthStateChanged,
         GoogleAuthProvider,
-        signInWithPopup
+        signInWithPopup,
+        updateProfile
     } from 'firebase/auth';
     import { 
         getFirestore, 
@@ -358,7 +439,7 @@
         enableIndexedDbPersistence 
     } from 'firebase/firestore';
 
-    // ⚠️ ВСТАВЬТЕ СВОИ ДАННЫЕ ИЗ FIREBASE ⚠️
+    // ⚠️ Данные ⚠️
     const firebaseConfig = {
         apiKey: "AIzaSyAcYMr_VmmeZm0f_SJo4plm-wOAmhKuZpU",
         authDomain: "servicecarbook.firebaseapp.com",
@@ -366,61 +447,45 @@
         storageBucket: "servicecarbook.firebasestorage.app",
         messagingSenderId: "321524196690",
         appId: "1:321524196690:web:4d3fe9df49b4ed2cc3068b",
-        measurementId: "G-DMGBWSE38R"
+        // measurementId: "G-DMGBWSE38R"
     };
 
-    // Инициализация Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-
-    // Включаем офлайн-персистентность (данные кешируются локально)
-    enableIndexedDbPersistence(db).catch((err) => {
-        console.warn('Offline persistence failed:', err);
-    });
-
-    // Провайдер для Google
+    enableIndexedDbPersistence(db).catch(console.warn);
     const googleProvider = new GoogleAuthProvider();
 
     // ------------------- Состояние приложения -------------------
     let appState = {
+        profile: { firstName: '', lastName: '', nickname: '' },
         car: { makeModel: '', year: null, plate: '', vin: '', currentMileage: 0 },
         services: [],
         fuelings: [],
         reminders: []
     };
-
-    // Текущий пользователь (null если гость)
     let currentUser = null;
-
-    // Флаг, чтобы не сохранять в Firestore при загрузке данных
     let isLoadingFromFirestore = false;
 
     // ------------------- Функции работы с данными -------------------
-    // Загрузка из localStorage (для гостя)
     function loadFromLocalStorage() {
         const saved = localStorage.getItem('carServiceBook');
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
                 appState = { ...appState, ...parsed };
+                if (!appState.profile) appState.profile = { firstName: '', lastName: '', nickname: '' };
                 if (!appState.car) appState.car = { makeModel: '', year: null, plate: '', vin: '', currentMileage: 0 };
             } catch (e) {}
-        } else {
-            appState.services = [];
-            appState.fuelings = [];
-            appState.reminders = [];
         }
         updateUI();
     }
 
-    // Сохранение в localStorage (для гостя)
     function saveToLocalStorage() {
         localStorage.setItem('carServiceBook', JSON.stringify(appState));
         updateUI();
     }
 
-    // Загрузка из Firestore (для авторизованного)
     async function loadFromFirestore(uid) {
         isLoadingFromFirestore = true;
         try {
@@ -429,8 +494,8 @@
             if (docSnap.exists()) {
                 appState = docSnap.data();
             } else {
-                // Новый пользователь — создаём документ с пустыми данными
                 appState = {
+                    profile: { firstName: '', lastName: '', nickname: '' },
                     car: { makeModel: '', year: null, plate: '', vin: '', currentMileage: 0 },
                     services: [],
                     fuelings: [],
@@ -438,16 +503,23 @@
                 };
                 await setDoc(docRef, appState);
             }
+            // Дополним профиль из auth, если чего-то не хватает
+            if (!appState.profile) appState.profile = {};
+            if (auth.currentUser) {
+                const displayName = auth.currentUser.displayName || '';
+                const nameParts = displayName.split(' ');
+                if (!appState.profile.firstName && nameParts[0]) appState.profile.firstName = nameParts[0];
+                if (!appState.profile.lastName && nameParts.length > 1) appState.profile.lastName = nameParts.slice(1).join(' ');
+                if (!appState.profile.nickname) appState.profile.nickname = auth.currentUser.email.split('@')[0];
+            }
         } catch (error) {
             console.error('Ошибка загрузки из Firestore:', error);
-            // Если ошибка, пробуем взять из localStorage как fallback
             loadFromLocalStorage();
         }
         isLoadingFromFirestore = false;
         updateUI();
     }
 
-    // Сохранение в Firestore (если пользователь залогинен)
     async function saveToFirestore() {
         if (!currentUser) return;
         try {
@@ -458,19 +530,18 @@
         }
     }
 
-    // Основная функция сохранения (вызывается после изменений)
     async function saveState() {
         if (currentUser && !isLoadingFromFirestore) {
             await saveToFirestore();
         } else {
             saveToLocalStorage();
         }
-        updateUI(); // обновление UI уже есть внутри saveToLocalStorage, но для единообразия вызовем ещё
+        updateUI();
     }
 
-    // Обновление UI (ваша原有 функция, немного модифицирована)
+    // ------------------- Обновление UI -------------------
     function updateUI() {
-        // шапка
+        // Шапка автомобиля
         document.getElementById('carDisplay').innerText = appState.car.makeModel || '—';
         const details = [];
         if (appState.car.year) details.push(appState.car.year);
@@ -479,7 +550,7 @@
         document.getElementById('carDetails').innerText = details.join(' • ');
         document.getElementById('currentMileageDisplay').innerText = appState.car.currentMileage ? appState.car.currentMileage.toLocaleString() : '0';
 
-        // главная
+        // Главная панель
         if (appState.fuelings.length) {
             const lastF = [...appState.fuelings].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
             document.getElementById('lastFuelDate').innerText = new Date(lastF.date).toLocaleDateString('ru-RU');
@@ -529,7 +600,7 @@
         if (document.getElementById('stats').classList.contains('active')) updateCharts();
     }
 
-    // Рендеры (ваши, без изменений)
+    // Рендеры списков (без изменений, идентичны вашим)
     function renderServices() {
         const container = document.getElementById('servicesList');
         if (!appState.services.length) { container.innerHTML = '<div class="text-secondary p-3">Нет записей</div>'; return; }
@@ -598,7 +669,7 @@
         }).join('') || '<li class="small-text">Нет активных</li>';
     }
 
-    // Удаление (переопределим для работы с saveState)
+    // Удаление
     window.deleteService = (id) => { appState.services = appState.services.filter(s => s.id != id); saveState(); };
     window.deleteFueling = (id) => { appState.fuelings = appState.fuelings.filter(f => f.id != id); saveState(); };
     window.deleteReminder = (id) => { appState.reminders = appState.reminders.filter(r => r.id != id); saveState(); };
@@ -742,7 +813,7 @@
         document.getElementById('reminderModalTitle').innerText = 'Новое напоминание';
     });
 
-    // Графики (ваши, без изменений)
+    // Графики
     let monthlyChart, categoryChart, fuelChart;
     function updateCharts() {
         if (monthlyChart) monthlyChart.destroy();
@@ -785,7 +856,7 @@
         });
     });
 
-    // Экспорт / импорт (работают с текущим appState)
+    // Экспорт / импорт
     document.getElementById('exportData').addEventListener('click', ()=>{
         const dataStr = JSON.stringify(appState, null, 2);
         const blob = new Blob([dataStr], {type: 'application/json'});
@@ -812,47 +883,113 @@
         reader.readAsText(file);
     });
 
-    // ------------------- Аутентификация -------------------
-    const authButton = document.getElementById('authButton');
+    // ------------------- Аутентификация и профиль -------------------
+    const loginBtn = document.getElementById('loginBtn');
+    const googleLoginBtn = document.getElementById('googleLoginBtn');
+    const registerBtn = document.getElementById('registerBtn');
     const logoutBtn = document.getElementById('logoutBtn');
-    const userEmailDisplay = document.getElementById('userEmailDisplay');
-    const authModalEl = document.getElementById('authModal');
-    const authModal = new bootstrap.Modal(authModalEl);
+    const loginButton = document.getElementById('loginButton');
+    const registerButton = document.getElementById('registerButton');
+    const userDisplayName = document.getElementById('userDisplayName');
+    const profileIcon = document.getElementById('profileIcon');
+    const loginModalEl = document.getElementById('loginModal');
+    const registerModalEl = document.getElementById('registerModal');
+    const profileModalEl = document.getElementById('profileModal');
+    const loginModal = new bootstrap.Modal(loginModalEl);
+    const registerModal = new bootstrap.Modal(registerModalEl);
+    const profileModal = new bootstrap.Modal(profileModalEl);
 
-    // Кнопки входа/регистрации
-    document.getElementById('loginBtn').addEventListener('click', async () => {
-        const email = document.getElementById('authEmail').value;
-        const password = document.getElementById('authPassword').value;
+    // Вход
+    loginBtn.addEventListener('click', async () => {
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const msg = document.getElementById('loginMessage');
+        if (!email) { msg.innerText = 'Введите email'; return; }
+        if (!password) { msg.innerText = 'Введите пароль'; return; }
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            authModal.hide();
+            loginModal.hide();
         } catch (error) {
-            document.getElementById('authMessage').innerText = error.message;
+            msg.innerText = error.message;
         }
     });
 
-    document.getElementById('registerBtn').addEventListener('click', async () => {
-        const email = document.getElementById('authEmail').value;
-        const password = document.getElementById('authPassword').value;
+    // Google вход
+    googleLoginBtn.addEventListener('click', async () => {
         try {
-            await createUserWithEmailAndPassword(auth, email, password);
-            authModal.hide();
+            const result = await signInWithPopup(auth, googleProvider);
+            // Сохраним данные профиля в Firestore
+            const user = result.user;
+            const profile = {
+                firstName: user.displayName?.split(' ')[0] || '',
+                lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+                nickname: user.email.split('@')[0]
+            };
+            // Обновим appState и Firestore
+            appState.profile = profile;
+            await saveToFirestore();
+            loginModal.hide();
         } catch (error) {
-            document.getElementById('authMessage').innerText = error.message;
+            document.getElementById('loginMessage').innerText = error.message;
         }
     });
 
-    document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+    // Регистрация
+    registerBtn.addEventListener('click', async () => {
+        const firstName = document.getElementById('registerFirstName').value.trim();
+        const lastName = document.getElementById('registerLastName').value.trim();
+        const nickname = document.getElementById('registerNickname').value.trim();
+        const email = document.getElementById('registerEmail').value.trim();
+        const password = document.getElementById('registerPassword').value;
+        const msg = document.getElementById('registerMessage');
+
+        if (!firstName) { msg.innerText = 'Введите имя'; return; }
+        if (!nickname) { msg.innerText = 'Введите никнейм'; return; }
+        if (!email) { msg.innerText = 'Введите email'; return; }
+        if (password.length < 6) { msg.innerText = 'Пароль должен быть не менее 6 символов'; return; }
+
         try {
-            await signInWithPopup(auth, googleProvider);
-            authModal.hide();
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            // Устанавливаем displayName (склеиваем имя и фамилию)
+            const displayName = lastName ? `${firstName} ${lastName}` : firstName;
+            await updateProfile(user, { displayName });
+            // Сохраняем профиль в Firestore
+            appState.profile = { firstName, lastName, nickname };
+            // Обновим документ пользователя (пока он пустой, создадим)
+            const docRef = doc(db, 'userData', user.uid);
+            await setDoc(docRef, appState);
+            registerModal.hide();
         } catch (error) {
-            document.getElementById('authMessage').innerText = error.message;
+            msg.innerText = error.message;
         }
     });
 
+    // Выход
     logoutBtn.addEventListener('click', async () => {
         await signOut(auth);
+    });
+
+    // Сохранение профиля
+    document.getElementById('saveProfileBtn').addEventListener('click', async () => {
+        const firstName = document.getElementById('profileFirstName').value.trim();
+        const lastName = document.getElementById('profileLastName').value.trim();
+        const nickname = document.getElementById('profileNickname').value.trim();
+        const msg = document.getElementById('profileMessage');
+
+        if (!firstName) { msg.innerText = 'Имя не может быть пустым'; return; }
+        if (!nickname) { msg.innerText = 'Никнейм не может быть пустым'; return; }
+
+        appState.profile = { firstName, lastName, nickname };
+        // Обновляем displayName в аутентификации
+        if (currentUser) {
+            const displayName = lastName ? `${firstName} ${lastName}` : firstName;
+            await updateProfile(currentUser, { displayName });
+        }
+        await saveState();
+        msg.innerText = 'Профиль обновлён';
+        setTimeout(() => msg.innerText = '', 2000);
+        updateUI();
     });
 
     // Слушаем состояние аутентификации
@@ -860,16 +997,33 @@
         currentUser = user;
         if (user) {
             // Пользователь вошёл
-            userEmailDisplay.textContent = user.email;
-            authButton.style.display = 'none';
+            userDisplayName.textContent = appState.profile?.nickname || user.email.split('@')[0];
+            loginButton.style.display = 'none';
+            registerButton.style.display = 'none';
             logoutBtn.style.display = 'inline-block';
+            profileIcon.style.display = 'inline-block';
             await loadFromFirestore(user.uid);
         } else {
             // Гость
-            userEmailDisplay.textContent = '';
-            authButton.style.display = 'inline-block';
+            userDisplayName.textContent = '';
+            loginButton.style.display = 'inline-block';
+            registerButton.style.display = 'inline-block';
             logoutBtn.style.display = 'none';
+            profileIcon.style.display = 'none';
             loadFromLocalStorage();
+        }
+    });
+
+    // Заполнение модалки профиля при открытии
+    profileModalEl.addEventListener('show.bs.modal', () => {
+        if (currentUser) {
+            document.getElementById('profileEmail').value = currentUser.email || '';
+            document.getElementById('profileFirstName').value = appState.profile?.firstName || '';
+            document.getElementById('profileLastName').value = appState.profile?.lastName || '';
+            document.getElementById('profileNickname').value = appState.profile?.nickname || '';
+            // Определяем провайдера
+            const provider = currentUser.providerData[0]?.providerId || 'email';
+            document.getElementById('profileProvider').value = provider === 'password' ? 'Email/Пароль' : 'Google';
         }
     });
 
@@ -891,25 +1045,8 @@
         document.getElementById('reminderModalTitle').innerText = 'Новое напоминание';
     });
 
-    // При загрузке страницы показываем модалку авто, если поле пустое (только для гостя, для пользователя данные уже подгрузятся)
-    window.addEventListener('load', function() {
-        if (!appState.car.makeModel && !currentUser) {
-            const carModal = new bootstrap.Modal(document.getElementById('editCarModal'), {
-                backdrop: 'static',
-                keyboard: false
-            });
-            carModal.show();
-        }
-    });
-
-    // Заполнение модалки авто
-    document.getElementById('editCarModal').addEventListener('show.bs.modal', function() {
-        document.getElementById('carMakeModel').value = appState.car.makeModel || '';
-        document.getElementById('carYear').value = appState.car.year || '';
-        document.getElementById('carPlate').value = appState.car.plate || '';
-        document.getElementById('carVin').value = appState.car.vin || '';
-        document.getElementById('carMileage').value = appState.car.currentMileage || 0;
-    });
+    // Инициализация
+    loadFromLocalStorage();
 </script>
 </body>
 </html>
