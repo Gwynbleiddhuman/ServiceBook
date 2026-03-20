@@ -135,14 +135,17 @@
 
     <dialog id="authModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-sm m-auto top-1/2 -translate-y-1/2">
         <div class="p-6">
-            <h3 class="text-xl font-bold mb-4 text-center">Вход / Регистрация</h3>
-            <p class="text-sm text-slate-500 mb-4 text-center">Сохраняйте данные в облако</p>
+            <h3 class="text-xl font-bold mb-4 text-center">Авторизация</h3>
+            <p class="text-sm text-slate-500 mb-4 text-center">Войдите, чтобы синхронизировать данные</p>
             <form id="form-auth" class="space-y-4">
                 <input type="email" id="auth-email" required placeholder="Email" class="w-full border p-3 rounded-lg bg-slate-50">
                 <input type="password" id="auth-pass" required placeholder="Пароль" class="w-full border p-3 rounded-lg bg-slate-50">
-                <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700">Продолжить</button>
+                <div class="flex flex-col gap-2 mt-2">
+                    <button type="button" id="btn-login-submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 transition">Войти</button>
+                    <button type="button" id="btn-register-submit" class="w-full bg-slate-100 text-slate-700 p-3 rounded-lg font-bold hover:bg-slate-200 transition">Создать аккаунт</button>
+                </div>
             </form>
-            <button onclick="authModal.close()" class="w-full mt-2 p-3 text-slate-500">Отмена</button>
+            <button onclick="authModal.close()" class="w-full mt-4 p-2 text-slate-400 hover:text-slate-600">Закрыть</button>
         </div>
     </dialog>
 
@@ -387,7 +390,7 @@
             updateUI();
         }
 
-        // --- АВТОРИЗАЦИЯ И ВЫХОД ---
+        // --- АВТОРИЗАЦИЯ (ИЗМЕНЕНО) ---
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             const uiUser = document.getElementById('user-info');
@@ -404,34 +407,59 @@
             }
         });
 
-        document.getElementById('form-auth').onsubmit = async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка...';
+        // Логика Входа
+        document.getElementById('btn-login-submit').onclick = async () => {
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-pass').value;
+            if(!email || !pass) return showToast('Введите email и пароль', 'warning');
+            
+            const btn = document.getElementById('btn-login-submit');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             try {
-                try {
-                    await signInWithEmailAndPassword(auth, email, pass);
-                } catch (err) {
-                    if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-                        await createUserWithEmailAndPassword(auth, email, pass);
-                        showToast('Регистрация успешна!');
-                    } else throw err;
-                }
+                await signInWithEmailAndPassword(auth, email, pass);
                 document.getElementById('authModal').close();
+                showToast('Успешный вход!');
             } catch (error) {
-                showToast(error.message, 'error');
+                if (error.code === 'auth/invalid-credential') {
+                    showToast('Неверный email или пароль', 'error');
+                } else {
+                    showToast(error.message, 'error');
+                }
             } finally {
-                btn.innerText = 'Продолжить';
+                btn.innerText = 'Войти';
             }
         };
 
-        // Логика выхода (очистка данных в браузере)
+        // Логика Регистрации
+        document.getElementById('btn-register-submit').onclick = async () => {
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-pass').value;
+            if(!email || !pass) return showToast('Введите email и пароль', 'warning');
+            
+            const btn = document.getElementById('btn-register-submit');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            try {
+                await createUserWithEmailAndPassword(auth, email, pass);
+                document.getElementById('authModal').close();
+                showToast('Аккаунт успешно создан!');
+            } catch (error) {
+                if (error.code === 'auth/email-already-in-use') {
+                    showToast('Этот email уже зарегистрирован', 'error');
+                } else if (error.code === 'auth/weak-password') {
+                    showToast('Пароль слишком простой (минимум 6 символов)', 'error');
+                } else {
+                    showToast(error.message, 'error');
+                }
+            } finally {
+                btn.innerText = 'Создать аккаунт';
+            }
+        };
+
+        // Выход
         document.getElementById('btn-logout').onclick = async () => {
             if(confirm('Выйти из аккаунта? Локальные данные будут очищены в целях безопасности.')) {
-                localStorage.removeItem('autoBookState'); // Удаляем данные из памяти ПК
-                appState = { car: { make: '', year: '', plate: '', mileage: 0 }, services: [], fuelings: [], reminders: [] }; // Сбрасываем переменные
+                localStorage.removeItem('autoBookState'); 
+                appState = { car: { make: '', year: '', plate: '', mileage: 0 }, services: [], fuelings: [], reminders: [] }; 
                 await signOut(auth);
                 showToast('Вы вышли из аккаунта');
             }
@@ -439,12 +467,10 @@
 
         // --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ---
         function updateUI() {
-            // Данные авто
             document.getElementById('display-car-name').innerText = appState.car.make || 'Мой Автомобиль';
             document.getElementById('display-car-details').innerText = `${appState.car.year || ''} ${appState.car.plate ? `| Гос.номер: ${appState.car.plate}` : ''}`;
             document.getElementById('display-mileage').innerText = appState.car.mileage.toLocaleString();
 
-            // Сводные карточки
             let totalCost = appState.services.reduce((acc, s) => acc + Number(s.cost), 0) + 
                             appState.fuelings.reduce((acc, f) => acc + Number(f.cost), 0);
             document.getElementById('dash-total-cost').innerText = `${totalCost.toLocaleString()} ₽`;
@@ -467,7 +493,7 @@
             if (activeRems.length > 0) document.getElementById('dash-reminders-count').classList.add('text-red-500');
             else document.getElementById('dash-reminders-count').classList.remove('text-red-500');
 
-            // Новое: Лента последних записей в Сводке
+            // Лента последних записей
             const recentContainer = document.getElementById('dash-recent-list');
             const allRecords = [
                 ...appState.services.map(s => ({ ...s, _type: 'service', _title: s.type, _icon: 'fa-wrench text-blue-500', _bg: 'bg-blue-50' })),
@@ -498,7 +524,6 @@
                 `).join('');
             }
 
-            // Рендер основных списков по вкладкам
             renderList('list-services', appState.services, s => `
                 <div class="p-4 flex justify-between items-center hover:bg-slate-50 transition">
                     <div>
