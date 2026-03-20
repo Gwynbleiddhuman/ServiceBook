@@ -3,19 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceBook Pro</title>
-    <meta name="theme-color" content="#0d6efd">
+    <title>Сервисная книжка автомобиля</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        :root { --primary: #0d6efd; --bg: #f4f7fb; }
-        body { background-color: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; }
-        .container-custom { max-width: 1100px; margin: 20px auto; background: white; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); padding: 25px; }
-        .card-dashboard { background: #f8fafd; border-radius: 20px; padding: 20px; border: 1px solid rgba(0,0,0,0.03); transition: 0.3s; }
-        .stats-number { font-size: 2rem; font-weight: 800; color: #1e293b; }
-        .fab-button { position: fixed; bottom: 25px; right: 25px; border-radius: 50px; padding: 15px 25px; box-shadow: 0 10px 20px rgba(13,110,253,0.3); z-index: 1000; }
-        #authSection { background: #edf2ff; padding: 6px 15px; border-radius: 50px; display: flex; align-items: center; gap: 10px; }
-        .btn-ocr { background: #f1f5f9; border: 1px dashed #cbd5e1; color: #64748b; width: 100%; padding: 15px; border-radius: 12px; margin-bottom: 15px; cursor: pointer; }
+        body { background-color: #f4f7fb; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .container-custom { max-width: 1200px; margin: 20px auto; background: white; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); padding: 30px; }
+        .nav-tabs .nav-link { color: #2c3e50; font-weight: 500; border: none; padding: 12px 20px; }
+        .nav-tabs .nav-link.active { background-color: #e9f0fe; color: #0d6efd; border-bottom: 3px solid #0d6efd; }
+        .tab-content { padding: 25px 0 10px; }
+        .card-dashboard { background: #f8fafd; border-radius: 18px; padding: 20px; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.02); height: 100%; }
+        .stats-number { font-size: 2.2rem; font-weight: 700; color: #1e293b; }
+        .stats-label { color: #64748b; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-circle { border-radius: 40px; padding: 10px 24px; }
+        .chart-container { height: 250px; margin-top: 20px; }
+        .fab-button { position: fixed; bottom: 30px; right: 30px; z-index: 100; box-shadow: 0 10px 20px rgba(13,110,253,0.3); }
+        #authSection { background: #e9f0fe; padding: 8px 16px; border-radius: 40px; display: inline-flex; align-items: center; gap: 12px; }
+        .btn-ocr-fake { border: 1px dashed #0d6efd; color: #0d6efd; background: #f0f5ff; width: 100%; border-radius: 10px; padding: 10px; margin-bottom: 15px; cursor: pointer; text-align: center; font-weight: 500; }
+        .btn-ocr-fake:hover { background: #e0eaff; }
     </style>
     <script type="importmap">
         {
@@ -30,83 +36,162 @@
 <body>
 
 <div class="container-custom">
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-        <div class="d-flex align-items-center gap-2">
-            <div class="bg-primary text-white p-3 rounded-4"><i class="fas fa-car fa-lg"></i></div>
-            <div>
-                <h4 class="mb-0" id="carDisplay">Загрузка...</h4>
-                <div id="carDetails" class="small text-muted">Сведения об авто</div>
-            </div>
-        </div>
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4">
         <div class="d-flex align-items-center gap-3">
+            <i class="fas fa-car fa-2x text-primary"></i>
+            <div>
+                <h2 class="mb-0" id="carDisplay">—</h2>
+                <span class="text-secondary" id="carDetails"></span>
+            </div>
+        </div>
+        <div class="d-flex gap-3 mt-2 mt-sm-0 align-items-center">
+            <div class="text-end me-2">
+                <div class="stats-label">Текущий пробег</div>
+                <div class="d-flex align-items-center">
+                    <span class="stats-number me-2" id="currentMileageDisplay">0</span> <span class="text-secondary">км</span>
+                </div>
+            </div>
             <div id="authSection">
-                <span id="userDisplayName" class="small fw-bold"></span>
-                <button class="btn btn-sm btn-primary rounded-pill" id="loginButton" data-bs-toggle="modal" data-bs-target="#loginModal">Войти</button>
-                <button class="btn btn-sm btn-light rounded-pill" id="logoutBtn" style="display:none">Выйти</button>
+                <span id="userDisplayName" class="fw-bold me-2"></span>
+                <i class="fas fa-user-circle fa-xl profile-icon" id="profileIcon" style="display: none;" data-bs-toggle="modal" data-bs-target="#profileModal"></i>
+                <button class="btn btn-sm btn-outline-primary" id="loginButton" data-bs-toggle="modal" data-bs-target="#loginModal">Войти</button>
+                <button class="btn btn-sm btn-outline-success" id="registerButton" data-bs-toggle="modal" data-bs-target="#registerModal">Регистрация</button>
+                <button class="btn btn-sm btn-outline-danger" id="logoutBtn" style="display: none;">Выйти</button>
             </div>
-            <button class="btn btn-dark btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#editCarModal">⚙️</button>
+            <button class="btn btn-outline-primary btn-circle" data-bs-toggle="modal" data-bs-target="#editCarModal"><i class="fas fa-pen me-2"></i>Изменить</button>
         </div>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            <div class="card-dashboard">
-                <div class="text-muted small text-uppercase fw-bold mb-1">Текущий пробег</div>
-                <div class="stats-number"><span id="currentMileageDisplay">0</span> <small class="fs-6 fw-normal">км</small></div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card-dashboard">
-                <div class="text-muted small text-uppercase fw-bold mb-1">Затраты (всего)</div>
-                <div class="stats-number" id="totalCosts">0 ₽</div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card-dashboard">
-                <div class="text-muted small text-uppercase fw-bold mb-1">Прогноз ТО</div>
-                <div id="serviceForecast" class="stats-number fs-4">—</div>
-                <div class="small text-muted mt-2" id="daysToService">Мало данных для расчета</div>
-            </div>
-        </div>
-    </div>
-
-    <ul class="nav nav-pills mb-4 bg-light p-1 rounded-4" id="pills-tab" role="tablist">
-        <li class="nav-item flex-fill"><button class="nav-link active w-100 rounded-4" data-bs-toggle="tab" data-bs-target="#tab-fuel">⛽ Заправки</button></li>
-        <li class="nav-item flex-fill"><button class="nav-link w-100 rounded-4" data-bs-toggle="tab" data-bs-target="#tab-service">🔧 Сервис</button></li>
+    <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+        <li class="nav-item"><button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button"><i class="fas fa-chart-pie me-2"></i>Главная</button></li>
+        <li class="nav-item"><button class="nav-link" id="services-tab" data-bs-toggle="tab" data-bs-target="#services" type="button"><i class="fas fa-wrench me-2"></i>Обслуживание</button></li>
+        <li class="nav-item"><button class="nav-link" id="fuelings-tab" data-bs-toggle="tab" data-bs-target="#fuelings" type="button"><i class="fas fa-gas-pump me-2"></i>Заправки</button></li>
+        <li class="nav-item"><button class="nav-link" id="reminders-tab" data-bs-toggle="tab" data-bs-target="#reminders" type="button"><i class="fas fa-bell me-2"></i>Напоминания</button></li>
+        <li class="nav-item"><button class="nav-link" id="stats-tab" data-bs-toggle="tab" data-bs-target="#stats" type="button"><i class="fas fa-chart-line me-2"></i>Статистика</button></li>
     </ul>
 
-    <div class="tab-content">
-        <div class="tab-pane fade show active" id="tab-fuel"><div id="fuelingsList" class="list-group list-group-flush"></div></div>
-        <div class="tab-pane fade" id="tab-service"><div id="servicesList" class="list-group list-group-flush"></div></div>
+    <div class="tab-content" id="mainTabContent">
+        <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card-dashboard">
+                        <div class="stats-label">Последняя заправка</div>
+                        <div class="stats-number" id="lastFuelDate">—</div>
+                        <div id="lastFuelInfo" class="small text-muted"></div>
+                        <hr class="my-3">
+                        <div class="stats-label">Средний расход</div>
+                        <div class="stats-number" id="avgConsumption">0 <small style="font-size: 1rem;">л/100км</small></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card-dashboard">
+                        <div class="stats-label">Последнее ТО</div>
+                        <div class="stats-number" id="lastServiceDate">—</div>
+                        <div id="lastServiceDesc" class="small text-muted"></div>
+                        <hr class="my-3">
+                        <div class="stats-label">Прогноз след. ТО</div>
+                        <div class="stats-number text-primary" id="serviceForecastDate">—</div>
+                        <div id="serviceForecastDays" class="small text-secondary"></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card-dashboard">
+                        <div class="stats-label">Всего затрат</div>
+                        <div class="stats-number" id="totalCosts">0 ₽</div>
+                        <hr class="my-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="stats-label">Напоминания</span>
+                            <span class="badge bg-warning text-dark" id="reminderCount">0</span>
+                        </div>
+                        <ul class="list-unstyled mt-2" id="reminderPreviewList"><li class="small text-muted">Нет активных</li></ul>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5">
+                <h5><i class="fas fa-chart-bar me-2 text-primary"></i>Расходы по месяцам</h5>
+                <div class="chart-container"><canvas id="monthlyChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="services" role="tabpanel">
+            <div class="d-flex justify-content-between mb-3"><h4>История обслуживания</h4><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addServiceModal">Запись о ТО</button></div>
+            <div id="servicesList" class="list-group"></div>
+        </div>
+        <div class="tab-pane fade" id="fuelings" role="tabpanel">
+            <div class="d-flex justify-content-between mb-3"><h4>Журнал заправок</h4><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addFuelingModal">Добавить заправку</button></div>
+            <div id="fuelingsList" class="list-group"></div>
+        </div>
+        <div class="tab-pane fade" id="reminders" role="tabpanel">
+            <div class="d-flex justify-content-between mb-3"><h4>Напоминания</h4><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReminderModal">Новое напоминание</button></div>
+            <div id="remindersList" class="list-group"></div>
+        </div>
+        <div class="tab-pane fade" id="stats" role="tabpanel">
+            <div class="row"><div class="col-md-6"><div class="card-dashboard"><h5>Затраты по категориям</h5><canvas id="categoryChart" height="200"></canvas></div></div><div class="col-md-6"><div class="card-dashboard"><h5>Расход топлива</h5><canvas id="fuelChart" height="200"></canvas></div></div></div>
+        </div>
     </div>
 </div>
 
-<div class="modal fade" id="addFuelingModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0 rounded-4"><div class="modal-body p-4">
-    <h5 class="mb-4 fw-bold">Добавить заправку</h5>
-    <div class="btn-ocr" id="fakeOcr"><i class="fas fa-camera me-2"></i> Сканировать чек (бета)</div>
-    <div class="row g-2">
-        <div class="col-6"><label class="small text-muted">Дата</label><input type="date" id="fuelDate" class="form-control" value="2026-03-20"></div>
-        <div class="col-6"><label class="small text-muted">Пробег</label><input type="number" id="fuelMileage" class="form-control" placeholder="0"></div>
-        <div class="col-6"><label class="small text-muted">Литров</label><input type="number" id="fuelLiters" class="form-control" step="0.1"></div>
-        <div class="col-6"><label class="small text-muted">Цена за л.</label><input type="number" id="fuelPrice" class="form-control" step="0.1"></div>
-    </div>
-    <button class="btn btn-primary w-100 mt-4 py-3 rounded-3 fw-bold" id="saveFuelingBtn">Сохранить</button>
+<div class="modal fade" id="loginModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5>Вход</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
+    <input type="email" class="form-control mb-3" id="loginEmail" placeholder="Email">
+    <input type="password" class="form-control mb-3" id="loginPassword" placeholder="Пароль">
+    <div class="d-grid gap-2"><button class="btn btn-primary" id="loginBtn">Войти</button><button class="btn btn-outline-danger" id="googleLoginBtn">Войти через Google</button></div>
+    <div id="loginMessage" class="mt-2 text-danger small"></div>
 </div></div></div></div>
 
-<div class="modal fade" id="loginModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content rounded-4"><div class="modal-body p-4 text-center">
-    <h5 class="fw-bold mb-4">Вход в систему</h5>
-    <input type="email" id="loginEmail" class="form-control mb-2" placeholder="Email">
-    <input type="password" id="loginPassword" class="form-control mb-3" placeholder="Пароль">
-    <button class="btn btn-primary w-100 rounded-pill py-2" id="loginBtn">Войти</button>
+<div class="modal fade" id="registerModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5>Регистрация</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
+    <input type="text" class="form-control mb-3" id="registerNickname" placeholder="Никнейм">
+    <input type="email" class="form-control mb-3" id="registerEmail" placeholder="Email">
+    <input type="password" class="form-control mb-3" id="registerPassword" placeholder="Пароль (мин. 6 симв.)">
+    <button class="btn btn-success w-100" id="registerBtn">Зарегистрироваться</button>
+    <div id="registerMessage" class="mt-2 text-danger small text-center"></div>
+    <div id="registerSuccessMessage" class="mt-2 text-success small text-center" style="display: none;">Регистрация успешна! Входим...</div>
 </div></div></div></div>
 
-<button class="btn btn-primary fab-button" data-bs-toggle="modal" data-bs-target="#addFuelingModal"><i class="fas fa-plus me-2"></i> Заправка</button>
+<div class="modal fade" id="addFuelingModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5>Новая заправка</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
+    <div class="btn-ocr-fake" id="fakeScannerBtn"><i class="fas fa-camera me-2"></i> Симуляция сканера чека</div>
+    <form id="fuelingForm">
+        <input type="hidden" id="fuelingId">
+        <div class="mb-3"><label class="form-label">Дата</label><input type="date" class="form-control" id="fuelDate" value="2026-03-20"></div>
+        <div class="row">
+            <div class="col"><label class="form-label">Пробег (км)</label><input type="number" class="form-control" id="fuelMileage"></div>
+            <div class="col"><label class="form-label">Литров</label><input type="number" step="0.01" class="form-control" id="fuelLiters"></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col"><label class="form-label">Цена за литр</label><input type="number" step="0.01" class="form-control" id="fuelPrice"></div>
+            <div class="col"><label class="form-label">Итого (₽)</label><input type="number" class="form-control" id="fuelTotal" readonly></div>
+        </div>
+        <div class="form-check mt-3"><input class="form-check-input" type="checkbox" id="fuelFullTank" checked><label class="form-check-label">Полный бак</label></div>
+        <button type="button" class="btn btn-primary w-100 mt-3" id="saveFuelingBtn">Сохранить</button>
+    </form>
+</div></div></div></div>
+
+<div class="modal fade" id="addServiceModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5>Запись о ТО</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
+    <form id="serviceForm">
+        <input type="hidden" id="serviceId">
+        <div class="mb-3"><label class="form-label">Дата</label><input type="date" class="form-control" id="serviceDate" value="2026-03-20"></div>
+        <div class="mb-3"><label class="form-label">Тип работ</label><input type="text" class="form-control" id="serviceType" placeholder="Замена масла..."></div>
+        <div class="row">
+            <div class="col"><label class="form-label">Пробег (км)</label><input type="number" class="form-control" id="serviceMileage"></div>
+            <div class="col"><label class="form-label">Стоимость (₽)</label><input type="number" class="form-control" id="serviceCost"></div>
+        </div>
+        <button type="button" class="btn btn-primary w-100 mt-3" id="saveServiceBtn">Сохранить</button>
+    </form>
+</div></div></div></div>
+
+<div class="modal fade" id="editCarModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5>Данные авто</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
+    <input type="text" class="form-control mb-2" id="carMakeModel" placeholder="Марка и модель">
+    <input type="number" class="form-control mb-2" id="carMileage" placeholder="Текущий пробег">
+    <button class="btn btn-primary w-100" id="saveCarBtn">Сохранить</button>
+</div></div></div></div>
+
+<button class="btn btn-primary fab-button" data-bs-toggle="modal" data-bs-target="#addFuelingModal"><i class="fas fa-gas-pump me-2"></i>Заправка</button>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
 <script type="module">
     import { initializeApp } from 'firebase/app';
-    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
-    import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, updateProfile } from 'firebase/auth';
+    import { getFirestore, doc, setDoc, getDoc, enableIndexedDbPersistence } from 'firebase/firestore';
 
     const firebaseConfig = {
         apiKey: "AIzaSyAcYMr_VmmeZm0f_SJo4plm-wOAmhKuZpU",
@@ -120,78 +205,153 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    enableIndexedDbPersistence(db).catch(console.warn);
+    const googleProvider = new GoogleAuthProvider();
 
-    let appState = { car: { makeModel: '', currentMileage: 0 }, services: [], fuelings: [] };
+    let appState = { profile: { nickname: '' }, car: { makeModel: '', currentMileage: 0 }, services: [], fuelings: [], reminders: [] };
     let currentUser = null;
 
-    async function save() {
-        if (currentUser) await setDoc(doc(db, 'userData', currentUser.uid), appState);
-        else localStorage.setItem('carServiceBook', JSON.stringify(appState));
+    // --- ЛОГИКА ДАННЫХ ---
+    async function saveState() {
+        if (currentUser) {
+            await setDoc(doc(db, 'userData', currentUser.uid), appState);
+        } else {
+            localStorage.setItem('carServiceBook', JSON.stringify(appState));
+        }
         updateUI();
     }
 
+    function updateGlobalMileage(newVal) {
+        const mileage = parseInt(newVal);
+        if (mileage > appState.car.currentMileage) {
+            appState.car.currentMileage = mileage;
+        }
+    }
+
+    function calculateForecast() {
+        if (appState.fuelings.length < 2) {
+            document.getElementById('serviceForecastDate').innerText = '—';
+            document.getElementById('serviceForecastDays').innerText = 'Мало данных';
+            return;
+        }
+        const sorted = [...appState.fuelings].sort((a,b) => new Date(a.date) - new Date(b.date));
+        const days = (new Date(sorted[sorted.length-1].date) - new Date(sorted[0].date)) / (1000 * 3600 * 24) || 1;
+        const kmDay = (sorted[sorted.length-1].mileage - sorted[0].mileage) / days;
+
+        if (kmDay > 0) {
+            const nextTO = (Math.floor(appState.car.currentMileage / 10000) + 1) * 10000;
+            const kmLeft = nextTO - appState.car.currentMileage;
+            const daysLeft = Math.round(kmLeft / kmDay);
+            const d = new Date(); d.setDate(d.getDate() + daysLeft);
+            document.getElementById('serviceForecastDate').innerText = d.toLocaleDateString();
+            document.getElementById('serviceForecastDays').innerText = `Через ~${daysLeft} дн. (${kmLeft} км)`;
+        }
+    }
+
     function updateUI() {
-        document.getElementById('carDisplay').innerText = appState.car.makeModel || 'Мой автомобиль';
+        document.getElementById('carDisplay').innerText = appState.car.makeModel || '—';
         document.getElementById('currentMileageDisplay').innerText = appState.car.currentMileage.toLocaleString();
         
         const total = [...appState.services, ...appState.fuelings].reduce((acc, cur) => acc + (cur.cost || cur.totalCost || 0), 0);
         document.getElementById('totalCosts').innerText = total.toLocaleString() + ' ₽';
         
-        // Прогноз ТО (математический)
-        if (appState.fuelings.length > 1) {
-            const sorted = [...appState.fuelings].sort((a,b) => new Date(a.date) - new Date(b.date));
-            const diffDays = (new Date(sorted[sorted.length-1].date) - new Date(sorted[0].date)) / (1000*3600*24) || 1;
-            const kmDay = (sorted[sorted.length-1].mileage - sorted[0].mileage) / diffDays;
-            if (kmDay > 0) {
-                const left = 10000 - (appState.car.currentMileage % 10000);
-                const days = Math.round(left / kmDay);
-                const d = new Date(); d.setDate(d.getDate() + days);
-                document.getElementById('serviceForecast').innerText = d.toLocaleDateString();
-                document.getElementById('daysToService').innerText = `Примерно через ${days} дн.`;
-            }
-        }
-        render();
+        renderLists();
+        calculateForecast();
     }
 
-    function render() {
-        const list = document.getElementById('fuelingsList');
-        list.innerHTML = appState.fuelings.map(f => `<div class="list-group-item d-flex justify-content-between align-items-center py-3">
-            <div><b>${f.date}</b><br><small>${f.mileage} км</small></div>
-            <div class="text-primary fw-bold">${f.totalCost} ₽</div>
-        </div>`).join('');
+    function renderLists() {
+        const fuelList = document.getElementById('fuelingsList');
+        fuelList.innerHTML = appState.fuelings.sort((a,b) => new Date(b.date) - new Date(a.date)).map(f => `
+            <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+                <div><b>${new Date(f.date).toLocaleDateString()}</b><br><small class="text-muted">${f.mileage} км • ${f.liters} л</small></div>
+                <div class="text-primary fw-bold">${f.totalCost} ₽</div>
+            </div>`).join('') || '<div class="p-3 text-muted">Нет заправок</div>';
+
+        const servList = document.getElementById('servicesList');
+        servList.innerHTML = appState.services.sort((a,b) => new Date(b.date) - new Date(a.date)).map(s => `
+            <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+                <div><b>${new Date(s.date).toLocaleDateString()}</b><br><small class="text-muted">${s.type} • ${s.mileage} км</small></div>
+                <div class="text-warning fw-bold">${s.cost} ₽</div>
+            </div>`).join('') || '<div class="p-3 text-muted">Нет ТО</div>';
     }
 
+    // --- ОБРАБОТЧИКИ ---
     document.getElementById('saveFuelingBtn').onclick = () => {
-        const m = parseInt(document.getElementById('fuelMileage').value);
-        if (m > appState.car.currentMileage) appState.car.currentMileage = m;
+        const m = document.getElementById('fuelMileage').value;
         const l = parseFloat(document.getElementById('fuelLiters').value) || 0;
         const p = parseFloat(document.getElementById('fuelPrice').value) || 0;
-        appState.fuelings.push({ id: Date.now(), date: document.getElementById('fuelDate').value, mileage: m, totalCost: l * p });
-        save();
+        updateGlobalMileage(m);
+        appState.fuelings.push({ id: Date.now(), date: document.getElementById('fuelDate').value, mileage: parseInt(m), liters: l, totalCost: l * p });
+        saveState();
         bootstrap.Modal.getInstance(document.getElementById('addFuelingModal')).hide();
     };
 
-    document.getElementById('loginBtn').onclick = async () => {
-        await signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
-        bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
+    document.getElementById('saveServiceBtn').onclick = () => {
+        const m = document.getElementById('serviceMileage').value;
+        updateGlobalMileage(m);
+        appState.services.push({ id: Date.now(), date: document.getElementById('serviceDate').value, type: document.getElementById('serviceType').value, mileage: parseInt(m), cost: parseInt(document.getElementById('serviceCost').value) || 0 });
+        saveState();
+        bootstrap.Modal.getInstance(document.getElementById('addServiceModal')).hide();
     };
 
-    document.getElementById('logoutBtn').onclick = () => signOut(auth);
+    document.getElementById('fakeScannerBtn').onclick = () => {
+        document.getElementById('fuelLiters').value = (Math.random() * 25 + 20).toFixed(2);
+        document.getElementById('fuelPrice').value = "55.40";
+        document.getElementById('fuelTotal').value = (document.getElementById('fuelLiters').value * 55.4).toFixed(2);
+    };
+
+    document.getElementById('saveCarBtn').onclick = () => {
+        appState.car.makeModel = document.getElementById('carMakeModel').value;
+        appState.car.currentMileage = parseInt(document.getElementById('carMileage').value) || 0;
+        saveState();
+        bootstrap.Modal.getInstance(document.getElementById('editCarModal')).hide();
+    };
+
+    // --- АУТЕНТИФИКАЦИЯ ---
+    document.getElementById('loginBtn').onclick = async () => {
+        try {
+            await signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
+            bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
+        } catch (e) { document.getElementById('loginMessage').innerText = "Ошибка входа"; }
+    };
+
+    document.getElementById('registerBtn').onclick = async () => {
+        const nick = document.getElementById('registerNickname').value;
+        try {
+            const res = await createUserWithEmailAndPassword(auth, document.getElementById('registerEmail').value, document.getElementById('registerPassword').value);
+            await updateProfile(res.user, { displayName: nick });
+            appState.profile.nickname = nick;
+            document.getElementById('registerSuccessMessage').style.display = 'block';
+            setTimeout(() => {
+                bootstrap.Modal.getInstance(document.getElementById('registerModal')).hide();
+                document.getElementById('registerSuccessMessage').style.display = 'none';
+            }, 1500);
+            await saveState();
+        } catch (e) { document.getElementById('registerMessage').innerText = e.message; }
+    };
 
     onAuthStateChanged(auth, async (user) => {
         currentUser = user;
         if (user) {
             document.getElementById('loginButton').style.display = 'none';
+            document.getElementById('registerButton').style.display = 'none';
             document.getElementById('logoutBtn').style.display = 'block';
-            document.getElementById('userDisplayName').innerText = user.email.split('@')[0];
+            document.getElementById('userDisplayName').innerText = user.displayName || user.email.split('@')[0];
             const snap = await getDoc(doc(db, 'userData', user.uid));
             if (snap.exists()) appState = snap.data();
         } else {
-            const s = localStorage.getItem('carServiceBook');
-            if (s) appState = JSON.parse(s);
+            document.getElementById('loginButton').style.display = 'block';
+            document.getElementById('registerButton').style.display = 'block';
+            document.getElementById('logoutBtn').style.display = 'none';
+            const saved = localStorage.getItem('carServiceBook');
+            if (saved) appState = JSON.parse(saved);
         }
         updateUI();
     });
+
+    document.getElementById('logoutBtn').onclick = () => signOut(auth);
+
 </script>
 </body>
 </html>
+
