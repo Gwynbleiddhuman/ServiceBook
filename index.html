@@ -3,375 +3,594 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Моя Сервисная Книжка</title>
+    <title>Моя Сервисная Книжка PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         .hidden { display: none !important; }
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .tab-btn.active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 600; }
+        dialog::backdrop { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
+        dialog[open] { animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans antialiased min-h-screen">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-20">
 
-    <div id="toast" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded shadow-lg hidden z-50 transition-all">
-        <span id="toast-msg">Сообщение</span>
-    </div>
+    <div id="toast" class="fixed top-5 right-5 px-6 py-3 rounded-lg shadow-xl hidden z-50 text-white font-medium transition-all"></div>
 
-    <div id="auth-view" class="min-h-screen flex items-center justify-center fade-in">
-        <div class="bg-white p-8 rounded-xl shadow-md w-full max-w-md">
-            <div class="text-center mb-6">
-                <i class="fas fa-car-wrench text-blue-600 text-4xl mb-2"></i>
-                <h1 class="text-2xl font-bold text-gray-800">Сервисная Книжка</h1>
+    <nav class="bg-blue-600 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2 text-xl font-bold">
+                <i class="fas fa-car-side"></i> AutoBook
             </div>
-
-            <div class="flex mb-4">
-                <button id="tab-login" class="flex-1 pb-2 border-b-2 border-blue-600 text-blue-600 font-semibold">Вход</button>
-                <button id="tab-register" class="flex-1 pb-2 border-b-2 border-transparent text-gray-500 font-semibold">Регистрация</button>
+            <div class="flex items-center gap-4">
+                <span id="user-info" class="text-sm font-medium"><i class="fas fa-wifi text-red-300" title="Локальный режим"></i> Гость</span>
+                <button id="btn-auth-open" onclick="authModal.showModal()" class="bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded text-sm transition">Войти</button>
+                <button id="btn-logout" class="bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded text-sm transition hidden">Выйти</button>
             </div>
-
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" id="login-email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Пароль</label>
-                    <input type="password" id="login-password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition">Войти</button>
-            </form>
-
-            <form id="register-form" class="space-y-4 hidden">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Никнейм</label>
-                    <input type="text" id="reg-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" id="reg-email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Пароль (мин. 6 символов)</label>
-                    <input type="password" id="reg-password" required minlength="6" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <button type="submit" class="w-full bg-green-600 text-white p-2 rounded-md hover:bg-green-700 transition">Зарегистрироваться</button>
-            </form>
         </div>
-    </div>
+    </nav>
 
-    <div id="app-view" class="hidden fade-in pb-10">
-        <nav class="bg-blue-600 text-white shadow-md">
-            <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
-                <div class="flex items-center gap-2 text-xl font-bold">
-                    <i class="fas fa-car-side"></i> Гараж
-                </div>
-                <div class="flex items-center gap-4">
-                    <span id="user-display-name" class="font-medium"></span>
-                    <button id="logout-btn" class="bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded transition text-sm">
-                        <i class="fas fa-sign-out-alt"></i> Выйти
-                    </button>
+    <div class="max-w-5xl mx-auto px-4 mt-6">
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 flex flex-wrap justify-between items-center gap-4 border border-slate-100">
+            <div class="flex items-center gap-4">
+                <div class="bg-blue-100 p-4 rounded-full text-blue-600 text-2xl"><i class="fas fa-car"></i></div>
+                <div>
+                    <h2 class="text-2xl font-bold" id="display-car-name">Мой Автомобиль</h2>
+                    <p class="text-slate-500 text-sm" id="display-car-details">Данные не заполнены</p>
                 </div>
             </div>
-        </nav>
+            <div class="text-right">
+                <p class="text-xs text-slate-400 uppercase tracking-wide font-bold">Текущий пробег</p>
+                <p class="text-2xl font-bold text-slate-800"><span id="display-mileage">0</span> <span class="text-sm text-slate-500">км</span></p>
+                <button onclick="carModal.showModal()" class="text-blue-600 hover:underline text-sm mt-1"><i class="fas fa-pen"></i> Изменить авто</button>
+            </div>
+        </div>
 
-        <div class="max-w-4xl mx-auto px-4 mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="flex overflow-x-auto border-b border-slate-200 mb-6 scrollbar-hide">
+            <button class="tab-btn active px-4 py-3 text-slate-500 whitespace-nowrap" data-target="tab-dash"><i class="fas fa-chart-pie me-2"></i>Сводка</button>
+            <button class="tab-btn px-4 py-3 text-slate-500 whitespace-nowrap" data-target="tab-service"><i class="fas fa-wrench me-2"></i>ТО</button>
+            <button class="tab-btn px-4 py-3 text-slate-500 whitespace-nowrap" data-target="tab-fuel"><i class="fas fa-gas-pump me-2"></i>Заправки</button>
+            <button class="tab-btn px-4 py-3 text-slate-500 whitespace-nowrap" data-target="tab-reminders"><i class="fas fa-bell me-2"></i>Напоминания</button>
+            <button class="tab-btn px-4 py-3 text-slate-500 whitespace-nowrap" data-target="tab-stats"><i class="fas fa-chart-line me-2"></i>Статистика</button>
+        </div>
+
+        <div id="tab-dash" class="tab-content block space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 border-l-4 border-l-blue-500">
+                    <p class="text-xs text-slate-400 uppercase font-bold">Средний расход</p>
+                    <p class="text-2xl font-bold mt-1" id="dash-avg-fuel">0 <span class="text-sm font-normal text-slate-500">л/100км</span></p>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 border-l-4 border-l-yellow-500">
+                    <p class="text-xs text-slate-400 uppercase font-bold">Всего затрат</p>
+                    <p class="text-2xl font-bold mt-1" id="dash-total-cost">0 ₽</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 border-l-4 border-l-red-500">
+                    <p class="text-xs text-slate-400 uppercase font-bold">Активные напоминания</p>
+                    <p class="text-2xl font-bold mt-1" id="dash-reminders-count">0</p>
+                </div>
+            </div>
             
-            <div class="md:col-span-1 space-y-6">
-                <div class="bg-white rounded-xl shadow-sm p-5 border-t-4 border-blue-500">
-                    <h3 class="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-2">Всего расходов</h3>
-                    <p class="text-3xl font-bold text-gray-800" id="total-cost">0 ₽</p>
-                    <p class="text-sm text-gray-500 mt-2">Записей: <span id="total-records">0</span></p>
-                </div>
+            <div class="flex gap-4">
+                <button onclick="serviceModal.showModal()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl shadow hover:bg-blue-700 transition font-medium"><i class="fas fa-plus"></i> Запись ТО</button>
+                <button onclick="fuelModal.showModal()" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl shadow hover:bg-emerald-700 transition font-medium"><i class="fas fa-plus"></i> Заправка</button>
+            </div>
+        </div>
 
-                <div class="bg-white rounded-xl shadow-sm p-5">
-                    <h2 class="text-lg font-bold border-b pb-2 mb-4">Новая запись ТО</h2>
-                    <form id="record-form" class="space-y-4">
-                        <div>
-                            <label class="block text-sm text-gray-600">Дата</label>
-                            <input type="date" id="rec-date" required class="w-full border rounded p-2 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-600">Пробег (км)</label>
-                            <input type="number" id="rec-mileage" required class="w-full border rounded p-2 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-600">Категория</label>
-                            <select id="rec-type" class="w-full border rounded p-2 text-sm">
-                                <option value="Масло и фильтры">Масло и фильтры</option>
-                                <option value="Ходовая часть">Ходовая часть</option>
-                                <option value="Двигатель">Двигатель</option>
-                                <option value="Шиномонтаж">Шиномонтаж</option>
-                                <option value="Электрика">Электрика</option>
-                                <option value="Другое">Другое</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-600">Стоимость (₽)</label>
-                            <input type="number" id="rec-cost" required class="w-full border rounded p-2 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-600">Описание / Запчасти</label>
-                            <textarea id="rec-notes" rows="2" class="w-full border rounded p-2 text-sm" placeholder="Например: Масло 5W-40, фильтр MANN"></textarea>
-                        </div>
-                        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded shadow hover:bg-blue-700 transition">
-                            <i class="fas fa-plus"></i> Добавить
-                        </button>
-                    </form>
+        <div id="tab-service" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                    <h3 class="font-bold text-lg">История обслуживания</h3>
+                    <button onclick="serviceModal.showModal()" class="text-blue-600 hover:text-blue-800"><i class="fas fa-plus-circle fa-lg"></i></button>
+                </div>
+                <div id="list-services" class="divide-y divide-slate-100">
+                    </div>
+            </div>
+        </div>
+
+        <div id="tab-fuel" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                    <h3 class="font-bold text-lg">Журнал заправок</h3>
+                    <button onclick="fuelModal.showModal()" class="text-blue-600 hover:text-blue-800"><i class="fas fa-plus-circle fa-lg"></i></button>
+                </div>
+                <div id="list-fuelings" class="divide-y divide-slate-100">
+                    </div>
+            </div>
+        </div>
+
+        <div id="tab-reminders" class="tab-content hidden">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                    <h3 class="font-bold text-lg">Предстоящие события</h3>
+                    <button onclick="reminderModal.showModal()" class="text-blue-600 hover:text-blue-800"><i class="fas fa-plus-circle fa-lg"></i></button>
+                </div>
+                <div id="list-reminders" class="divide-y divide-slate-100">
+                    </div>
+            </div>
+        </div>
+
+        <div id="tab-stats" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                    <h3 class="font-bold mb-4 text-center">Расходы по категориям</h3>
+                    <canvas id="chart-doughnut" class="w-full max-h-[300px]"></canvas>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                    <h3 class="font-bold mb-4 text-center">Динамика расхода (л/100км)</h3>
+                    <canvas id="chart-line" class="w-full max-h-[300px]"></canvas>
                 </div>
             </div>
-
-            <div class="md:col-span-2">
-                <div class="bg-white rounded-xl shadow-sm p-5 min-h-[500px]">
-                    <h2 class="text-xl font-bold border-b pb-3 mb-4"><i class="fas fa-history text-blue-500"></i> История обслуживания</h2>
-                    
-                    <div id="records-list" class="space-y-4">
-                        <div class="text-center text-gray-400 py-10" id="empty-state">
-                            <i class="fas fa-clipboard-list text-4xl mb-3"></i>
-                            <p>Записей пока нет. Добавьте первое ТО.</p>
-                        </div>
-                    </div>
-                </div>
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex gap-4 justify-center">
+                <button onclick="exportData()" class="px-4 py-2 border border-slate-300 rounded text-sm hover:bg-slate-50"><i class="fas fa-download"></i> Сохранить бэкап</button>
+                <input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(event)">
+                <button onclick="document.getElementById('import-file').click()" class="px-4 py-2 border border-slate-300 rounded text-sm hover:bg-slate-50"><i class="fas fa-upload"></i> Загрузить бэкап</button>
             </div>
         </div>
     </div>
+
+    <dialog id="authModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-sm m-auto top-1/2 -translate-y-1/2">
+        <div class="p-6">
+            <h3 class="text-xl font-bold mb-4 text-center">Вход / Регистрация</h3>
+            <p class="text-sm text-slate-500 mb-4 text-center">Сохраняйте данные в облако</p>
+            <form id="form-auth" class="space-y-4">
+                <input type="email" id="auth-email" required placeholder="Email" class="w-full border p-3 rounded-lg bg-slate-50">
+                <input type="password" id="auth-pass" required placeholder="Пароль" class="w-full border p-3 rounded-lg bg-slate-50">
+                <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700">Продолжить</button>
+            </form>
+            <button onclick="authModal.close()" class="w-full mt-2 p-3 text-slate-500">Отмена</button>
+        </div>
+    </dialog>
+
+    <dialog id="carModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-md m-auto top-1/2 -translate-y-1/2">
+        <div class="p-6">
+            <h3 class="text-xl font-bold mb-4">Данные авто</h3>
+            <form id="form-car" class="space-y-3">
+                <input type="text" id="car-make" placeholder="Марка и модель (напр. Kia Rio)" class="w-full border p-2 rounded bg-slate-50" required>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="number" id="car-year" placeholder="Год выпуска" class="w-full border p-2 rounded bg-slate-50">
+                    <input type="text" id="car-plate" placeholder="Гос. номер" class="w-full border p-2 rounded bg-slate-50">
+                </div>
+                <input type="number" id="car-mileage" placeholder="Текущий пробег (км)" class="w-full border p-2 rounded bg-slate-50" required>
+                <div class="flex gap-2 mt-4">
+                    <button type="button" onclick="carModal.close()" class="flex-1 bg-slate-200 p-2 rounded font-medium">Отмена</button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white p-2 rounded font-medium">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <dialog id="serviceModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-md m-auto top-1/2 -translate-y-1/2">
+        <div class="p-6">
+            <h3 class="text-xl font-bold mb-4">Запись о ТО</h3>
+            <form id="form-service" class="space-y-3">
+                <input type="date" id="srv-date" class="w-full border p-2 rounded bg-slate-50" required>
+                <input type="text" id="srv-type" placeholder="Тип работ (Масло, фильтры...)" class="w-full border p-2 rounded bg-slate-50" required>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="number" id="srv-mileage" placeholder="Пробег" class="w-full border p-2 rounded bg-slate-50" required>
+                    <input type="number" id="srv-cost" placeholder="Стоимость (₽)" class="w-full border p-2 rounded bg-slate-50" required>
+                </div>
+                <div class="flex gap-2 mt-4">
+                    <button type="button" onclick="serviceModal.close()" class="flex-1 bg-slate-200 p-2 rounded font-medium">Отмена</button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white p-2 rounded font-medium flex justify-center items-center gap-2"><span class="btn-text">Сохранить</span></button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <dialog id="fuelModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-md m-auto top-1/2 -translate-y-1/2">
+        <div class="p-6">
+            <h3 class="text-xl font-bold mb-4">Заправка</h3>
+            <form id="form-fuel" class="space-y-3">
+                <input type="date" id="fl-date" class="w-full border p-2 rounded bg-slate-50" required>
+                <input type="number" id="fl-mileage" placeholder="Пробег (км)" class="w-full border p-2 rounded bg-slate-50" required>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="number" step="0.1" id="fl-liters" placeholder="Литров" class="w-full border p-2 rounded bg-slate-50" required>
+                    <input type="number" id="fl-cost" placeholder="Сумма (₽)" class="w-full border p-2 rounded bg-slate-50" required>
+                </div>
+                <label class="flex items-center gap-2 cursor-pointer mt-2">
+                    <input type="checkbox" id="fl-full" class="w-5 h-5 rounded text-blue-600" checked>
+                    <span>Заправка до полного бака</span>
+                </label>
+                <div class="flex gap-2 mt-4">
+                    <button type="button" onclick="fuelModal.close()" class="flex-1 bg-slate-200 p-2 rounded font-medium">Отмена</button>
+                    <button type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded font-medium flex justify-center items-center gap-2"><span class="btn-text">Сохранить</span></button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <dialog id="reminderModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-md m-auto top-1/2 -translate-y-1/2">
+        <div class="p-6">
+            <h3 class="text-xl font-bold mb-4">Напоминание</h3>
+            <form id="form-reminder" class="space-y-3">
+                <input type="text" id="rem-title" placeholder="Что нужно сделать?" class="w-full border p-2 rounded bg-slate-50" required>
+                <input type="number" id="rem-mileage" placeholder="На каком пробеге? (км)" class="w-full border p-2 rounded bg-slate-50" required>
+                <div class="flex gap-2 mt-4">
+                    <button type="button" onclick="reminderModal.close()" class="flex-1 bg-slate-200 p-2 rounded font-medium">Отмена</button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white p-2 rounded font-medium flex justify-center items-center gap-2"><span class="btn-text">Сохранить</span></button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } 
-               from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, deleteDoc, doc } 
-               from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-        // ==============================================================================
-        // ВНИМАНИЕ! ВСТАВЬТЕ СЮДА ВАШИ ДАННЫЕ FIREBASE ИЗ КОНСОЛИ
-        // ==============================================================================
+        // =========================================================
+        // ВАШ FIREBASE CONFIG (Замените на свои данные из консоли!)
+        // =========================================================
         const firebaseConfig = {
-            apiKey: "AIzaSyAcYMr_VmmeZm0f_SJo4plm-wOAmhKuZpU",
-            authDomain: "servicecarbook.firebaseapp.com",
-            projectId: "servicecarbook",
-            storageBucket: "servicecarbook.firebasestorage.app",
-            messagingSenderId: "321524196690",
-            appId: "1:321524196690:web:4d3fe9df49b4ed2cc3068b",
-            measurementId: "G-DMGBWSE38R"
+            apiKey: "ВАШ_API_KEY",
+            authDomain: "ВАШ_PROJECT.firebaseapp.com",
+            projectId: "ВАШ_PROJECT",
+            storageBucket: "ВАШ_PROJECT.appspot.com",
+            messagingSenderId: "ВАШ_ID",
+            appId: "ВАШ_APP_ID"
         };
 
-        // Инициализация
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // UI Элементы
-        const authView = document.getElementById('auth-view');
-        const appView = document.getElementById('app-view');
-        const tabLogin = document.getElementById('tab-login');
-        const tabRegister = document.getElementById('tab-register');
-        const formLogin = document.getElementById('login-form');
-        const formRegister = document.getElementById('register-form');
-        const toast = document.getElementById('toast');
-        const toastMsg = document.getElementById('toast-msg');
-
-        // Переключение вкладок Вход/Регистрация
-        tabLogin.onclick = () => {
-            formLogin.classList.remove('hidden');
-            formRegister.classList.add('hidden');
-            tabLogin.classList.add('border-blue-600', 'text-blue-600');
-            tabLogin.classList.remove('border-transparent', 'text-gray-500');
-            tabRegister.classList.remove('border-blue-600', 'text-blue-600');
-            tabRegister.classList.add('border-transparent', 'text-gray-500');
+        // --- СОСТОЯНИЕ ПРИЛОЖЕНИЯ (Единый объект) ---
+        let appState = {
+            car: { make: '', year: '', plate: '', mileage: 0 },
+            services: [],
+            fuelings: [],
+            reminders: []
         };
-        tabRegister.onclick = () => {
-            formRegister.classList.remove('hidden');
-            formLogin.classList.add('hidden');
-            tabRegister.classList.add('border-blue-600', 'text-blue-600');
-            tabRegister.classList.remove('border-transparent', 'text-gray-500');
-            tabLogin.classList.remove('border-blue-600', 'text-blue-600');
-            tabLogin.classList.add('border-transparent', 'text-gray-500');
+        let currentUser = null;
+        let myChartDoughnut = null;
+        let myChartLine = null;
+
+        // --- УВЕДОМЛЕНИЯ ---
+        window.showToast = (msg, type = 'success') => {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = `fixed top-5 right-5 px-6 py-3 rounded-lg shadow-xl z-50 text-white font-medium transition-all ${type === 'error' ? 'bg-red-500' : type === 'warning' ? 'bg-yellow-500' : 'bg-emerald-500'}`;
+            t.classList.remove('hidden');
+            setTimeout(() => t.classList.add('hidden'), 3500);
         };
 
-        // Функция уведомлений
-        function showToast(message, type = 'success') {
-            toastMsg.innerText = message;
-            toast.className = `fixed top-5 right-5 px-6 py-3 rounded shadow-lg z-50 transition-all ${type === 'error' ? 'bg-red-500' : 'bg-green-500'} text-white`;
-            toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 3000);
+        // --- СОХРАНЕНИЕ / ЗАГРУЗКА ДАННЫХ ---
+        async function saveData(btnElement = null) {
+            let originalText = '';
+            if (btnElement) {
+                const span = btnElement.querySelector('.btn-text');
+                originalText = span.innerText;
+                span.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                btnElement.disabled = true;
+            }
+
+            // 1. Всегда сохраняем локально (Offline-first)
+            localStorage.setItem('autoBookState', JSON.stringify(appState));
+
+            // 2. Пробуем сохранить в облако
+            if (currentUser) {
+                try {
+                    await setDoc(doc(db, "userData", currentUser.uid), appState);
+                    showToast('Сохранено в облако');
+                } catch (e) {
+                    console.error("Firebase Error:", e);
+                    showToast('Сохранено локально (ошибка связи)', 'warning');
+                }
+            } else {
+                showToast('Сохранено локально');
+            }
+
+            if (btnElement) {
+                btnElement.querySelector('.btn-text').innerText = originalText;
+                btnElement.disabled = false;
+            }
+            updateUI();
         }
 
-        // Авторизация
-        formLogin.onsubmit = async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-password').value;
-            try {
-                await signInWithEmailAndPassword(auth, email, pass);
-                showToast('Успешный вход!');
-            } catch (error) {
-                showToast(error.message, 'error');
+        async function loadData() {
+            // Грузим локалку как бэкап
+            const local = localStorage.getItem('autoBookState');
+            if (local) appState = JSON.parse(local);
+
+            // Если авторизован, берем актуальное из базы
+            if (currentUser) {
+                try {
+                    const docSnap = await getDoc(doc(db, "userData", currentUser.uid));
+                    if (docSnap.exists()) {
+                        appState = docSnap.data();
+                        localStorage.setItem('autoBookState', JSON.stringify(appState)); // синхронизируем
+                    }
+                } catch (e) {
+                    showToast('Не удалось загрузить из облака. Показаны локальные данные.', 'warning');
+                }
             }
-        };
+            updateUI();
+        }
 
-        // Регистрация
-        formRegister.onsubmit = async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('reg-name').value;
-            const email = document.getElementById('reg-email').value;
-            const pass = document.getElementById('reg-password').value;
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-                await updateProfile(userCredential.user, { displayName: name });
-                showToast('Аккаунт создан!');
-            } catch (error) {
-                showToast(error.message, 'error');
-            }
-        };
-
-        // Выход
-        document.getElementById('logout-btn').onclick = () => signOut(auth);
-
-        // Отслеживание состояния пользователя
-        let currentUser = null;
+        // --- АВТОРИЗАЦИЯ ---
         onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            const uiUser = document.getElementById('user-info');
             if (user) {
-                currentUser = user;
-                authView.classList.add('hidden');
-                appView.classList.remove('hidden');
-                document.getElementById('user-display-name').innerText = user.displayName || user.email;
-                
-                // Ставим сегодняшнюю дату по умолчанию
-                document.getElementById('rec-date').valueAsDate = new Date();
-                
-                loadRecords(); // Загрузка данных из БД
+                uiUser.innerHTML = `<i class="fas fa-cloud text-blue-300" title="Облачная синхронизация"></i> ${user.email}`;
+                document.getElementById('btn-auth-open').classList.add('hidden');
+                document.getElementById('btn-logout').classList.remove('hidden');
+                loadData();
             } else {
-                currentUser = null;
-                appView.classList.add('hidden');
-                authView.classList.remove('hidden');
+                uiUser.innerHTML = `<i class="fas fa-wifi text-slate-400" title="Локальный режим"></i> Гость`;
+                document.getElementById('btn-auth-open').classList.remove('hidden');
+                document.getElementById('btn-logout').classList.add('hidden');
+                loadData();
             }
         });
 
-        // Функция получения иконки по категории
-        function getCategoryIcon(type) {
-            const icons = {
-                'Масло и фильтры': 'fa-oil-can text-yellow-500',
-                'Ходовая часть': 'fa-cogs text-gray-500',
-                'Двигатель': 'fa-car-battery text-red-500',
-                'Шиномонтаж': 'fa-compact-disc text-blue-500',
-                'Электрика': 'fa-plug text-purple-500',
-                'Другое': 'fa-wrench text-green-500'
-            };
-            return icons[type] || icons['Другое'];
-        }
-
-        // Загрузка записей из Firestore
-        async function loadRecords() {
-            if (!currentUser) return;
-            const recordsList = document.getElementById('records-list');
-            const emptyState = document.getElementById('empty-state');
-            
-            try {
-                const q = query(
-                    collection(db, "serviceRecords"), 
-                    where("userId", "==", currentUser.uid),
-                    orderBy("date", "desc") // Сортировка от новых к старым
-                );
-                
-                const querySnapshot = await getDocs(q);
-                recordsList.innerHTML = '';
-                
-                let totalCost = 0;
-                let count = 0;
-
-                if (querySnapshot.empty) {
-                    recordsList.appendChild(emptyState);
-                    emptyState.classList.remove('hidden');
-                } else {
-                    emptyState.classList.add('hidden');
-                    querySnapshot.forEach((doc) => {
-                        const data = doc.data();
-                        totalCost += Number(data.cost);
-                        count++;
-                        
-                        // Создание карточки записи
-                        const div = document.createElement('div');
-                        div.className = "border rounded-lg p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-50 hover:bg-gray-100 transition";
-                        div.innerHTML = `
-                            <div class="flex items-center gap-4 mb-2 sm:mb-0">
-                                <div class="bg-white p-3 rounded-full shadow-sm">
-                                    <i class="fas ${getCategoryIcon(data.type)} text-xl"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-gray-800">${data.type}</h4>
-                                    <p class="text-xs text-gray-500"><i class="far fa-calendar-alt"></i> ${data.date} | <i class="fas fa-tachometer-alt"></i> ${data.mileage} км</p>
-                                    ${data.notes ? `<p class="text-sm text-gray-600 mt-1 italic">${data.notes}</p>` : ''}
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-0 pt-2 sm:pt-0">
-                                <span class="font-bold text-lg text-gray-800">${data.cost} ₽</span>
-                                <button class="text-red-400 hover:text-red-600 transition p-2 delete-btn" data-id="${doc.id}">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </div>
-                        `;
-                        recordsList.appendChild(div);
-                    });
-                }
-
-                // Обновление статистики
-                document.getElementById('total-cost').innerText = `${totalCost.toLocaleString('ru-RU')} ₽`;
-                document.getElementById('total-records').innerText = count;
-
-                // Навешиваем обработчики на кнопки удаления
-                document.querySelectorAll('.delete-btn').forEach(btn => {
-                    btn.onclick = async (e) => {
-                        const id = e.currentTarget.getAttribute('data-id');
-                        if(confirm('Удалить эту запись?')) {
-                            await deleteDoc(doc(db, "serviceRecords", id));
-                            showToast('Запись удалена');
-                            loadRecords();
-                        }
-                    }
-                });
-
-            } catch (error) {
-                console.error("Ошибка загрузки:", error);
-                // Если база не создана или индексы не настроены, покажем это
-                if(error.message.includes('index')) {
-                     alert("Для сортировки по дате Firebase требует создать индекс. Ссылка выведена в консоль браузера (F12).");
-                }
-            }
-        }
-
-        // Добавление новой записи
-        document.getElementById('record-form').onsubmit = async (e) => {
+        document.getElementById('form-auth').onsubmit = async (e) => {
             e.preventDefault();
-            if (!currentUser) return;
-
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
-
-            const record = {
-                userId: currentUser.uid,
-                date: document.getElementById('rec-date').value,
-                mileage: parseInt(document.getElementById('rec-mileage').value),
-                type: document.getElementById('rec-type').value,
-                cost: parseFloat(document.getElementById('rec-cost').value),
-                notes: document.getElementById('rec-notes').value,
-                timestamp: new Date()
-            };
-
+            const btn = e.target.querySelector('button');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка...';
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-pass').value;
             try {
-                await addDoc(collection(db, "serviceRecords"), record);
-                showToast('Запись успешно добавлена!');
-                e.target.reset();
-                document.getElementById('rec-date').valueAsDate = new Date(); // возвращаем дату
-                loadRecords();
+                // Пытаемся войти. Если нет аккаунта - регистрируем.
+                try {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                } catch (err) {
+                    if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+                        await createUserWithEmailAndPassword(auth, email, pass);
+                        showToast('Регистрация успешна!');
+                    } else throw err;
+                }
+                document.getElementById('authModal').close();
             } catch (error) {
-                showToast('Ошибка: ' + error.message, 'error');
+                showToast(error.message, 'error');
             } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-plus"></i> Добавить';
+                btn.innerText = 'Продолжить';
             }
         };
+
+        document.getElementById('btn-logout').onclick = () => signOut(auth);
+
+        // --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА И РАСЧЕТЫ ---
+        function updateUI() {
+            // 1. Шапка авто
+            document.getElementById('display-car-name').innerText = appState.car.make || 'Мой Автомобиль';
+            document.getElementById('display-car-details').innerText = `${appState.car.year || ''} ${appState.car.plate ? `| Гос.номер: ${appState.car.plate}` : ''}`;
+            document.getElementById('display-mileage').innerText = appState.car.mileage.toLocaleString();
+
+            // 2. Сводка (Расчеты)
+            let totalCost = appState.services.reduce((acc, s) => acc + Number(s.cost), 0) + 
+                            appState.fuelings.reduce((acc, f) => acc + Number(f.cost), 0);
+            document.getElementById('dash-total-cost').innerText = `${totalCost.toLocaleString()} ₽`;
+
+            // Расчет расхода (нужно мин 2 заправки "до полного")
+            let fullTanks = appState.fuelings.filter(f => f.isFull).sort((a,b) => new Date(a.date) - new Date(b.date));
+            if (fullTanks.length > 1) {
+                let first = fullTanks[0];
+                let last = fullTanks[fullTanks.length - 1];
+                let dist = last.mileage - first.mileage;
+                // Считаем все литры со второй по последнюю заправку
+                let liters = fullTanks.slice(1).reduce((acc, f) => acc + Number(f.liters), 0);
+                if (dist > 0) {
+                    document.getElementById('dash-avg-fuel').innerHTML = `${((liters / dist) * 100).toFixed(1)} <span class="text-sm font-normal text-slate-500">л/100км</span>`;
+                }
+            }
+
+            // Напоминания
+            let activeRems = appState.reminders.filter(r => r.mileage - appState.car.mileage <= 500);
+            document.getElementById('dash-reminders-count').innerText = activeRems.length;
+            if (activeRems.length > 0) document.getElementById('dash-reminders-count').classList.add('text-red-500');
+
+            // 3. Рендер списков
+            renderList('list-services', appState.services, s => `
+                <div class="p-4 flex justify-between items-center hover:bg-slate-50 transition">
+                    <div>
+                        <p class="font-bold text-slate-800">${s.type}</p>
+                        <p class="text-xs text-slate-500">${s.date} • Пробег: ${s.mileage} км</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="font-bold text-slate-800">${Number(s.cost).toLocaleString()} ₽</span>
+                        <button onclick="deleteItem('services', ${s.id})" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `);
+
+            renderList('list-fuelings', appState.fuelings, f => `
+                <div class="p-4 flex justify-between items-center hover:bg-slate-50 transition">
+                    <div>
+                        <p class="font-bold text-slate-800">${f.liters} л. ${f.isFull ? '<span class="bg-blue-100 text-blue-600 text-[10px] px-2 py-0.5 rounded uppercase ml-1">Полный</span>' : ''}</p>
+                        <p class="text-xs text-slate-500">${f.date} • Пробег: ${f.mileage} км</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="font-bold text-slate-800">${Number(f.cost).toLocaleString()} ₽</span>
+                        <button onclick="deleteItem('fuelings', ${f.id})" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `);
+
+            renderList('list-reminders', appState.reminders, r => {
+                let left = r.mileage - appState.car.mileage;
+                let isUrgent = left <= 500;
+                return `
+                <div class="p-4 flex justify-between items-center hover:bg-slate-50 transition ${isUrgent ? 'bg-red-50' : ''}">
+                    <div>
+                        <p class="font-bold text-slate-800">${r.title}</p>
+                        <p class="text-xs ${isUrgent ? 'text-red-500 font-bold' : 'text-slate-500'}">Запланировано на: ${r.mileage} км (Осталось: ${left > 0 ? left : 0} км)</p>
+                    </div>
+                    <button onclick="deleteItem('reminders', ${r.id})" class="text-slate-400 hover:text-red-600"><i class="fas fa-check-circle fa-xl"></i></button>
+                </div>
+            `});
+
+            updateCharts();
+        }
+
+        function renderList(elementId, dataArray, templateFn) {
+            const el = document.getElementById(elementId);
+            if (!dataArray || dataArray.length === 0) {
+                el.innerHTML = '<div class="p-6 text-center text-slate-400"><i class="fas fa-inbox fa-2x mb-2"></i><br>Нет записей</div>';
+                return;
+            }
+            // Сортируем по дате или пробегу по убыванию
+            const sorted = [...dataArray].sort((a,b) => (b.date ? new Date(b.date) : b.mileage) - (a.date ? new Date(a.date) : a.mileage));
+            el.innerHTML = sorted.map(templateFn).join('');
+        }
+
+        // Удаление элемента
+        window.deleteItem = async (collection, id) => {
+            if(confirm('Удалить запись?')) {
+                appState[collection] = appState[collection].filter(i => i.id !== id);
+                await saveData();
+            }
+        };
+
+        // --- ОБРАБОТЧИКИ ФОРМ ---
+        
+        // Автомобиль
+        document.getElementById('form-car').onsubmit = async (e) => {
+            e.preventDefault();
+            appState.car = {
+                make: document.getElementById('car-make').value,
+                year: document.getElementById('car-year').value,
+                plate: document.getElementById('car-plate').value,
+                mileage: Number(document.getElementById('car-mileage').value)
+            };
+            await saveData(e.target.querySelector('button[type="submit"]'));
+            document.getElementById('carModal').close();
+        };
+
+        // ТО
+        document.getElementById('form-service').onsubmit = async (e) => {
+            e.preventDefault();
+            let m = Number(document.getElementById('srv-mileage').value);
+            appState.services.push({
+                id: Date.now(),
+                date: document.getElementById('srv-date').value,
+                type: document.getElementById('srv-type').value,
+                mileage: m,
+                cost: Number(document.getElementById('srv-cost').value)
+            });
+            if (m > appState.car.mileage) appState.car.mileage = m;
+            await saveData(e.target.querySelector('button[type="submit"]'));
+            e.target.reset(); document.getElementById('serviceModal').close();
+        };
+
+        // Заправка
+        document.getElementById('form-fuel').onsubmit = async (e) => {
+            e.preventDefault();
+            let m = Number(document.getElementById('fl-mileage').value);
+            appState.fuelings.push({
+                id: Date.now(),
+                date: document.getElementById('fl-date').value,
+                mileage: m,
+                liters: Number(document.getElementById('fl-liters').value),
+                cost: Number(document.getElementById('fl-cost').value),
+                isFull: document.getElementById('fl-full').checked
+            });
+            if (m > appState.car.mileage) appState.car.mileage = m;
+            await saveData(e.target.querySelector('button[type="submit"]'));
+            e.target.reset(); document.getElementById('fuelModal').close();
+        };
+
+        // Напоминание
+        document.getElementById('form-reminder').onsubmit = async (e) => {
+            e.preventDefault();
+            appState.reminders.push({
+                id: Date.now(),
+                title: document.getElementById('rem-title').value,
+                mileage: Number(document.getElementById('rem-mileage').value)
+            });
+            await saveData(e.target.querySelector('button[type="submit"]'));
+            e.target.reset(); document.getElementById('reminderModal').close();
+        };
+
+        // --- ВКЛАДКИ ---
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('active', 'border-blue-600', 'text-blue-600', 'font-bold');
+                    b.classList.add('text-slate-500');
+                });
+                btn.classList.add('active', 'border-blue-600', 'text-blue-600', 'font-bold');
+                btn.classList.remove('text-slate-500');
+                
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                document.getElementById(btn.dataset.target).classList.remove('hidden');
+                
+                if(btn.dataset.target === 'tab-stats') updateCharts();
+            });
+        });
+
+        // --- УСТАНОВКА ДАТ ПО УМОЛЧАНИЮ ---
+        document.getElementById('srv-date').valueAsDate = new Date();
+        document.getElementById('fl-date').valueAsDate = new Date();
+
+        // --- ГРАФИКИ (Chart.js) ---
+        function updateCharts() {
+            if (document.getElementById('tab-stats').classList.contains('hidden')) return;
+
+            // 1. Пончик (Доли затрат)
+            const sumSrv = appState.services.reduce((a, b) => a + Number(b.cost), 0);
+            const sumFl = appState.fuelings.reduce((a, b) => a + Number(b.cost), 0);
+            
+            if (myChartDoughnut) myChartDoughnut.destroy();
+            myChartDoughnut = new Chart(document.getElementById('chart-doughnut'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ремонт/ТО', 'Топливо'],
+                    datasets: [{ data: [sumSrv, sumFl], backgroundColor: ['#3b82f6', '#10b981'], borderWidth: 0 }]
+                },
+                options: { plugins: { legend: { position: 'bottom' } } }
+            });
+
+            // 2. Линейный (Расход топлива)
+            let fuelData = [];
+            let labels = [];
+            let fullTanks = appState.fuelings.filter(f => f.isFull).sort((a,b) => new Date(a.date) - new Date(b.date));
+            
+            for(let i = 1; i < fullTanks.length; i++) {
+                let dist = fullTanks[i].mileage - fullTanks[i-1].mileage;
+                if(dist > 0) {
+                    labels.push(fullTanks[i].date);
+                    fuelData.push(((fullTanks[i].liters / dist) * 100).toFixed(1));
+                }
+            }
+
+            if (myChartLine) myChartLine.destroy();
+            myChartLine = new Chart(document.getElementById('chart-line'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'Расход (л/100км)', data: fuelData, borderColor: '#f59e0b', tension: 0.3, fill: true, backgroundColor: 'rgba(245, 158, 11, 0.1)' }]
+                },
+                options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: false } } }
+            });
+        }
+
+        // --- ЭКСПОРТ И ИМПОРТ ---
+        window.exportData = () => {
+            const blob = new Blob([JSON.stringify(appState, null, 2)], {type: 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `autobook_backup_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        };
+
+        window.importData = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                try {
+                    appState = JSON.parse(ev.target.result);
+                    await saveData();
+                    showToast('Данные успешно загружены!');
+                } catch(ex) { showToast('Ошибка формата файла', 'error'); }
+            };
+            reader.readAsText(file);
+        };
+
     </script>
 </body>
 </html>
