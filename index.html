@@ -15,7 +15,7 @@
         @keyframes slideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#256eb">
+    <meta name="theme-color" content="#2563eb">
     <link rel="apple-touch-icon" href="/icon.png">
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-20">
@@ -897,9 +897,6 @@
             };
             reader.readAsText(file);
         };
-
-    </script>
-    <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js');
