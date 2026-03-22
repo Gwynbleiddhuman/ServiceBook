@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "short_name": "Service Car Book",
+  "name": "Service Car Book",
+  "short_name": "ServiceBook",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f8fafc",
