@@ -27,21 +27,26 @@
 
     <div id="toast" class="fixed top-5 right-5 px-6 py-3 rounded-lg shadow-xl hidden z-50 text-white font-medium transition-all"></div>
 
-    <nav class="bg-blue-600 text-white shadow-md sticky top-0 z-40">
-        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+     <nav class="bg-blue-600 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center gap-2">
             <div class="flex items-center gap-2 text-xl font-bold">
-                <i class="fas fa-car-side"></i> Service Car Book
+                <i class="fas fa-car-side"></i> <span class="hidden md:inline">Service Car Book</span>
             </div>
-            <div class="flex items-center gap-3 md:gap-4">
-                <a href="https://t.me/ИМЯ_ВАШЕГО_АККАУНТА" target="_blank" class="bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded text-sm transition flex items-center gap-2" title="Написать разработчику">
-                    <i class="far fa-comment-dots"></i><span class="hidden sm:inline">Отзыв</span>
+            
+            <div class="flex items-center gap-2 md:gap-4">
+                <a href="https://t.me/ИМЯ_ВАШЕГО_АККАУНТА" target="_blank" class="bg-blue-700 hover:bg-blue-800 px-2 sm:px-3 py-1.5 rounded text-[10px] sm:text-xs md:text-sm transition flex items-center gap-1.5 text-center leading-tight">
+                    <i class="far fa-comment-dots text-sm"></i>
+                    <span class="hidden sm:inline">Обратная связь и предложения</span>
+                    <span class="sm:hidden">Обратная связь<br>и предложения</span>
                 </a>
-                <span id="user-info" class="text-sm font-medium"><i class="fas fa-wifi text-red-300" title="Локальный режим"></i> Гость</span>
+                
+                <span id="user-info" class="text-sm font-medium hidden sm:block"><i class="fas fa-wifi text-red-300" title="Локальный режим"></i> Гость</span>
                 <button id="btn-auth-open" onclick="authModal.showModal()" class="bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded text-sm transition">Войти</button>
                 <button id="btn-logout" class="bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded text-sm transition hidden">Выйти</button>
             </div>
         </div>
     </nav>
+
 
     <div class="max-w-5xl mx-auto px-4 mt-6">
         <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 flex flex-wrap justify-between items-center gap-4 border border-slate-100">
