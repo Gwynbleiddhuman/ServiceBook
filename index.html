@@ -209,6 +209,11 @@
                 <input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(event)">
                 <button onclick="document.getElementById('import-file').click()" class="px-4 py-2 border border-slate-300 rounded text-sm hover:bg-slate-50"><i class="fas fa-upload"></i> Загрузить бэкап</button>
             </div>
+            <div class="flex justify-center mt-2 pb-4">
+                <button onclick="shareApp()" class="flex items-center gap-2 bg-blue-50 text-blue-700 px-6 py-3 rounded-xl font-bold hover:bg-blue-100 transition active:scale-95 border border-blue-100 shadow-sm w-full md:w-auto justify-center">
+                    <i class="fas fa-share-nodes fa-lg"></i> Поделиться приложением
+                </button>
+            </div>
         </div>
     </div>
 
@@ -582,6 +587,19 @@
           console.log('Ошибка регистрации ServiceWorker:', err);
         });
     });
+  }
+</script>
+<script>
+  function shareApp() {
+    if (navigator.share) {
+      navigator.share({
+        title: 'Service Car Book',
+        text: 'Удобная сервисная книжка для учета расходов на авто. Рекомендую!',
+        url: 'https://servicecarbook.ru'
+      }).catch(console.error);
+    } else {
+      alert('Скопируйте ссылку для друга: https://servicecarbook.ru');
+    }
   }
 </script>
 </body>
