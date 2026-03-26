@@ -22,6 +22,23 @@
     <meta property="og:image" content="https://servicecarbook.ru/icon.png">
     <meta property="og:url" content="https://servicecarbook.ru/">
     <meta property="og:type" content="website">
+    <style>
+  /* 1. Запрещаем выделять текст пальцем (как на обычных сайтах) */
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+    /* 2. Убираем синее мерцание при клике на кнопки */
+    -webkit-tap-highlight-color: transparent;
+    /* 3. Отключаем "резинку" браузера (когда тянешь страницу вниз и она обновляется) */
+    overscroll-behavior-y: none;
+  }
+
+  /* 4. НО! Обязательно разрешаем выделять текст и печатать внутри полей ввода! */
+  input, textarea {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+</style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-20">
 
