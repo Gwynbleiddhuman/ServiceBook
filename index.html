@@ -52,9 +52,10 @@
             </div>
             
             <div class="flex items-center gap-2 shrink-0">
-                <a href="https://t.me/webservicecarbook" target="_blank" rel="noopener noreferrer" class="bg-blue-700 hover:bg-blue-800 px-2 py-1.5 rounded text-xs sm:text-sm transition flex items-center gap-1">
-                    <i class="far fa-comment-dots"></i> <span>Отзывы</span>
-                </a>
+                <button onclick="openTelegram()" class="bg-blue-700 hover:bg-blue-800 px-2 py-1.5 rounded text-xs sm:text-sm transition flex items-center gap-1">
+    <i class="far fa-comment-dots"></i> <span>Отзывы</span>
+</button>
+
                 
                 <span id="user-info" class="text-xs sm:text-sm font-medium flex items-center gap-1">
                     <i class="fas fa-wifi text-red-300" title="Локальный режим"></i> Гость
@@ -602,6 +603,18 @@
       alert('Скопируйте ссылку для друга: https://servicecarbook.ru');
     }
   }
+</script>
+<script>
+  // Умное открытие Telegram с проверкой сети
+  window.openTelegram = () => {
+    if (navigator.onLine) {
+      // Если интернет есть — открываем в новой вкладке/приложении
+      window.open('https://t.me/webservicecarbook', '_blank', 'noopener,noreferrer');
+    } else {
+      // Если интернета нет — показываем ваше красивое внутреннее уведомление
+      showToast('Нет подключения к интернету', 'error');
+    }
+  };
 </script>
 </body>
 </html>
