@@ -2,7 +2,7 @@
       "relation": ["delegate_permission/common.handle_all_urls"],
       "target": {
         "namespace": "android_app",
-        "package_name": "ru.servicecarbook.twa",
+        "package_name": "ru.servicecarbook.apk",
         "sha256_cert_fingerprints": ["B9:08:D6:25:B1:99:81:20:1F:C1:BC:E9:E4:9E:1E:11:06:13:1F:2B:73:94:C0:8B:CD:17:7F:38:74:22:B9:97"]
       }
     }]
