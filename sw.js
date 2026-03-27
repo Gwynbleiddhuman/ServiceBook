@@ -1,4 +1,4 @@
-const CACHE_NAME = 'autobook-cache-v2'; // Изменили на v2, чтобы телефон скачал новую версию!
+const CACHE_NAME = 'autobook-cache-v3'; // Изменили на v2, чтобы телефон скачал новую версию!
 
 const urlsToCache = [
   '/',
