@@ -1,36 +1,42 @@
-const CACHE_NAME = 'autobook-cache-v4'; // Изменили на v2, чтобы телефон скачал новую версию!
-
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json'
-];
+const CACHE_NAME = 'carbook-nuke-v1';
 
 self.addEventListener('install', event => {
+  self.skipWaiting(); // Принудительно убиваем старый Service Worker
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      console.log('Кэш открыт, загружаем файлы');
-      return cache.addAll(urlsToCache);
+      return cache.addAll([
+        '/',
+        '/index.html',
+        '/manifest.json'
+      ]);
     })
+  );
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Удаляем старый кэш:', cacheName);
+            return caches.delete(cacheName); // Выжигаем старые файлы
+          }
+        })
+      );
+    }).then(() => self.clients.claim()) // Мгновенно перехватываем контроль
   );
 });
 
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(response => {
-      // 1. Если файл есть в кэше (оффлайн режим) — отдаем его
-      if (response) {
+    fetch(event.request)
+      .then(response => {
+        // Если сеть есть, обновляем кэш на лету
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
         return response;
-      }
-      
-      // 2. Иначе пытаемся скачать из интернета
-      return fetch(event.request).catch(() => {
-        // 3. ЕСЛИ ИНТЕРНЕТА НЕТ: принудительно отдаем главную страницу, 
-        // чтобы приложение не зависало на белом экране или логотипе
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
-        }
-      });
-    })
+      })
+      .catch(() => caches.match(event.request)) // Если сети нет, берем из кэша
   );
 });
