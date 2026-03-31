@@ -1,4 +1,4 @@
-const CACHE_NAME = 'carbook-nuke-v2.1';
+const CACHE_NAME = 'carbook-nuke-v3';
 
 self.addEventListener('install', event => {
   self.skipWaiting(); // Принудительно убиваем старый Service Worker
