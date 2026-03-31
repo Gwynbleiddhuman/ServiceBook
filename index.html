@@ -207,7 +207,7 @@
             </div>
             
             <div class="flex flex-col sm:flex-row justify-center gap-3 mt-2 pb-4 px-4 sm:px-0">
-                <button onclick="openRuStore()" class="flex items-center gap-2 bg-blue-50 text-blue-700 px-6 py-3 rounded-xl font-bold hover:bg-blue-100 transition active:scale-95 border border-blue-100 shadow-sm w-full sm:w-auto justify-center">
+                <button onclick="copyAndGoToRuStore()" class="flex items-center gap-2 bg-blue-50 text-blue-700 px-6 py-3 rounded-xl font-bold hover:bg-blue-100 transition active:scale-95 border border-blue-100 shadow-sm w-full sm:w-auto justify-center">
     <i class="fab fa-android fa-lg"></i> Скачать в RuStore
 </button>
                 
@@ -951,15 +951,43 @@
   }
 </script>
 <script>
-    window.openRuStore = function() {
-    const url = 'https://www.rustore.ru/catalog/app/ru.servicecarbook.app'; // Замените на свою ссылку
+    window.copyAndGoToRuStore = function() {
+    // ВАЖНО: Вставьте сюда реальную ссылку на ваше приложение!
+    const url = 'https://www.rustore.ru/catalog/app/ru.servicecarbook.app'; 
     
-    // Этот метод принудительно открывает ссылку во внешнем системном браузере
-    const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
-    
-    // Если по какой-то причине окно не открылось (блокировщик), пробуем обычный редирект
-    if (!newWindow  newWindow.closed  typeof newWindow.closed === 'undefined') {
-        window.location.href = url;
+    // Функция для перехода после копирования
+    const redirect = () => {
+        setTimeout(() => {
+            window.open(url, '_blank') || (window.location.href = url);
+        }, 800); // Небольшая задержка, чтобы пользователь успел прочитать уведомление
+    };
+
+    // Пробуем скопировать современным способом
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(url).then(() => {
+            showToast('Ссылка скопирована! Открываем RuStore...');
+            redirect();
+        }).catch(() => {
+            // Если не вышло скопировать, просто пробуем открыть
+            redirect();
+        });
+    } else {
+        // Старый способ копирования (фолбэк)
+        const textArea = document.createElement("textarea");
+        textArea.value = url;
+        textArea.style.position = "absolute";
+        textArea.style.left = "-999999px";
+        document.body.prepend(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            showToast('Ссылка скопирована! Открываем RuStore...');
+        } catch (error) {
+            console.error('Ошибка копирования');
+        } finally {
+            textArea.remove();
+            redirect();
+        }
     }
 };
     
