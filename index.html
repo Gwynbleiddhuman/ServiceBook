@@ -207,9 +207,9 @@
             </div>
             
             <div class="flex flex-col sm:flex-row justify-center gap-3 mt-2 pb-4 px-4 sm:px-0">
-                <a href="https://www.rustore.ru/catalog/app/ru.servicecarbook.app" target="_top" rel="external noopener noreferrer" class="flex items-center gap-2 bg-blue-50 text-blue-700 px-6 py-3 rounded-xl font-bold hover:bg-blue-100 transition active:scale-95 border border-blue-100 shadow-sm w-full sm:w-auto justify-center">
+                <button onclick="openRuStore()" class="flex items-center gap-2 bg-blue-50 text-blue-700 px-6 py-3 rounded-xl font-bold hover:bg-blue-100 transition active:scale-95 border border-blue-100 shadow-sm w-full sm:w-auto justify-center">
     <i class="fab fa-android fa-lg"></i> Скачать в RuStore
-</a>
+</button>
                 
                 <button onclick="shareWebsite()" class="flex items-center gap-2 bg-slate-50 text-slate-700 px-6 py-3 rounded-xl font-bold hover:bg-slate-100 transition active:scale-95 border border-slate-200 shadow-sm w-full sm:w-auto justify-center">
                     <i class="fas fa-share-nodes fa-lg"></i> Поделиться сайтом
@@ -951,6 +951,18 @@
   }
 </script>
 <script>
+    window.openRuStore = function() {
+    const url = 'https://www.rustore.ru/catalog/app/ru.servicecarbook.app'; // Замените на свою ссылку
+    
+    // Этот метод принудительно открывает ссылку во внешнем системном браузере
+    const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+    
+    // Если по какой-то причине окно не открылось (блокировщик), пробуем обычный редирект
+    if (!newWindow  newWindow.closed  typeof newWindow.closed === 'undefined') {
+        window.location.href = url;
+    }
+};
+    
   window.shareWebsite = function() {
     const shareData = {
       title: 'Service Book',
