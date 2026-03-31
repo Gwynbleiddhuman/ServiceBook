@@ -315,7 +315,11 @@
             <form id="form-reminder" class="space-y-3">
                 <input type="hidden" id="rem-id">
                 <input type="text" id="rem-title" placeholder="Что нужно сделать?" class="w-full border p-2 rounded bg-slate-50" required>
-                <input type="number" id="rem-mileage" placeholder="На каком пробеге? (км)" class="w-full border p-2 rounded bg-slate-50" required>
+                <div class="grid grid-cols-2 gap-3">
+    <input type="number" id="rem-mileage" placeholder="Пробег (км)" class="w-full border p-2 rounded bg-slate-50">
+    <input type="date" id="rem-date" class="w-full border p-2 rounded bg-slate-50">
+</div>
+<p class="text-[10px] text-slate-400 italic">Заполните пробег, дату или оба поля сразу</p>
                 <div class="flex gap-2 mt-4">
                     <button type="button" onclick="reminderModal.close()" class="flex-1 bg-slate-200 p-2 rounded font-medium">Отмена</button>
                     <button type="submit" class="flex-1 bg-blue-600 text-white p-2 rounded font-medium flex justify-center items-center gap-2"><span class="btn-text">Сохранить</span></button>
@@ -459,6 +463,7 @@
             const form = document.getElementById('form-reminder'); 
             form.reset(); 
             document.getElementById('rem-id').value = ''; 
+            document.getElementById('rem-date').value = ''; // Сброс даты
             document.getElementById('rem-modal-title').innerText = 'Новое напоминание'; 
             if (id) { 
                 const r = appState.reminders.find(x => x.id === id); 
@@ -466,7 +471,8 @@
                     document.getElementById('rem-modal-title').innerText = 'Редактировать напоминание'; 
                     document.getElementById('rem-id').value = r.id; 
                     document.getElementById('rem-title').value = r.title; 
-                    document.getElementById('rem-mileage').value = r.mileage; 
+                    document.getElementById('rem-mileage').value = r.mileage || ''; 
+                    document.getElementById('rem-date').value = r.date || ''; // Загрузка даты
                 } 
             } 
             document.getElementById('reminderModal').showModal(); 
@@ -651,15 +657,17 @@
             } else {
                 const sortedRems = [...appState.reminders].sort((a,b) => a.mileage - b.mileage);
                 remEl.innerHTML = sortedRems.map(r => {
-                    let left = r.mileage - currentMileage;
-                    let isUrgent = left <= 500;
-                    return `
+                    let left = r.mileage ? r.mileage - currentMileage : null;
+                    let isUrgent = (left !== null && left <= 500) || (r.date && new Date(r.date) <= new Date());
+                    
+                    return 
                     <div class="p-4 mx-4 my-3 bg-white rounded-xl shadow-sm border ${isUrgent ? 'border-red-300 bg-red-50/30' : 'border-slate-100'} flex justify-between items-center">
                         <div>
                             <p class="font-bold text-slate-800 mb-1.5">${r.title}</p>
                             <div class="flex flex-wrap gap-2">
-                                <span class="bg-slate-100 text-slate-600 px-2 py-1 rounded-md text-xs font-medium"><i class="fas fa-bullseye mr-1 opacity-70"></i>Цель: ${r.mileage.toLocaleString()} км</span>
-                                <span class="${isUrgent ? 'bg-red-100 text-red-700' : 'bg-emerald-50 text-emerald-600'} px-2 py-1 rounded-md text-xs font-medium">Осталось: ${left > 0 ? left.toLocaleString() : 0} км</span>
+                                ${r.mileage ? <span class="bg-slate-100 text-slate-600 px-2 py-1 rounded-md text-xs font-medium"><i class="fas fa-bullseye mr-1 opacity-70"></i>${r.mileage.toLocaleString()} км</span> : ''}
+                                ${r.date ? <span class="bg-slate-100 text-slate-600 px-2 py-1 rounded-md text-xs font-medium"><i class="far fa-calendar-alt mr-1 opacity-70"></i>${formatDate(r.date)}</span> : ''}
+                                ${left !== null ? <span class="${left <= 500 ? 'bg-red-100 text-red-700' : 'bg-emerald-50 text-emerald-600'} px-2 py-1 rounded-md text-xs font-medium">Осталось: ${left > 0 ? left.toLocaleString() : 0} км</span> : ''}
                             </div>
                         </div>
                         <div class="flex gap-2">
@@ -667,7 +675,7 @@
                             <button onclick="deleteItem('reminders', ${r.id})" class="text-emerald-500 hover:text-emerald-700 bg-white shadow-sm border border-slate-100 w-10 h-10 rounded-full flex justify-center items-center transition" title="Выполнено"><i class="fas fa-check"></i></button>
                         </div>
                     </div>
-                `}).join('');
+                }).join('');
             }
 
             updateCharts();
@@ -714,7 +722,7 @@
         document.getElementById('form-service').onsubmit = async (e) => { e.preventDefault(); const idVal = document.getElementById('srv-id').value; const m = Number(document.getElementById('srv-mileage').value); const newData = { id: idVal ? Number(idVal) : Date.now(), date: document.getElementById('srv-date').value, type: document.getElementById('srv-type').value, mileage: m, cost: Number(document.getElementById('srv-cost').value) }; if (idVal) { const idx = appState.services.findIndex(x => x.id === Number(idVal)); if(idx !== -1) appState.services[idx] = newData; } else { appState.services.push(newData); } await saveData(e.target.querySelector('button[type="submit"]')); document.getElementById('serviceModal').close(); };
         document.getElementById('form-tuning').onsubmit = async (e) => { e.preventDefault(); const idVal = document.getElementById('tn-id').value; const newData = { id: idVal ? Number(idVal) : Date.now(), date: document.getElementById('tn-date').value, title: document.getElementById('tn-title').value, cost: Number(document.getElementById('tn-cost').value), notes: document.getElementById('tn-notes').value }; if (idVal) { const idx = appState.tuning.findIndex(x => x.id === Number(idVal)); if(idx !== -1) appState.tuning[idx] = newData; } else { appState.tuning.push(newData); } await saveData(e.target.querySelector('button[type="submit"]')); document.getElementById('tuningModal').close(); };
         document.getElementById('form-fuel').onsubmit = async (e) => { e.preventDefault(); const idVal = document.getElementById('fl-id').value; const m = Number(document.getElementById('fl-mileage').value); const newData = { id: idVal ? Number(idVal) : Date.now(), date: document.getElementById('fl-date').value, mileage: m, liters: Number(document.getElementById('fl-liters').value), cost: Number(document.getElementById('fl-cost').value), isFull: document.getElementById('fl-full').checked }; if (idVal) { const idx = appState.fuelings.findIndex(x => x.id === Number(idVal)); if(idx !== -1) appState.fuelings[idx] = newData; } else { appState.fuelings.push(newData); } await saveData(e.target.querySelector('button[type="submit"]')); document.getElementById('fuelModal').close(); };
-        document.getElementById('form-reminder').onsubmit = async (e) => { e.preventDefault(); const idVal = document.getElementById('rem-id').value; const newData = { id: idVal ? Number(idVal) : Date.now(), title: document.getElementById('rem-title').value, mileage: Number(document.getElementById('rem-mileage').value) }; if (idVal) { const idx = appState.reminders.findIndex(x => x.id === Number(idVal)); if(idx !== -1) appState.reminders[idx] = newData; } else { appState.reminders.push(newData); } await saveData(e.target.querySelector('button[type="submit"]')); document.getElementById('reminderModal').close(); };
+        document.getElementById('form-reminder').onsubmit = async (e) => { e.preventDefault(); const idVal = document.getElementById('rem-id').value; const newData = { id: idVal ? Number(idVal) : Date.now(), title: document.getElementById('rem-title').value, mileage: document.getElementById('rem-mileage').value ? Number(document.getElementById('rem-mileage').value) : null,date: document.getElementById('rem-date').value || null };
 
         document.querySelectorAll('.tab-btn').forEach(btn => { btn.addEventListener('click', () => { document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active', 'border-blue-600', 'text-blue-600', 'font-bold'); b.classList.add('text-slate-500'); }); btn.classList.add('active', 'border-blue-600', 'text-blue-600', 'font-bold'); btn.classList.remove('text-slate-500'); document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden')); document.getElementById(btn.dataset.target).classList.remove('hidden'); if(btn.dataset.target === 'tab-stats') updateCharts(); }); });
 
