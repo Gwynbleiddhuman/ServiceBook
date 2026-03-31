@@ -244,7 +244,7 @@
                 <input type="number" id="car-mileage" placeholder="Укажите пробег (км)" class="w-full border p-2 rounded bg-slate-50" required>
                 <div class="flex gap-2 mt-4">
                     <button type="button" onclick="carModal.close()" class="flex-1 bg-slate-200 p-2 rounded font-medium">Отмена</button>
-                    <button type="submit" class="flex-1 bg-blue-600 text-white p-2 rounded font-medium">Сохранить</button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white p-2 rounded font-medium flex justify-center items-center gap-2"><span class="btn-text">Сохранить</span></button>
                 </div>
             </form>
         </div>
@@ -314,15 +314,49 @@
             <h3 class="text-xl font-bold mb-4" id="rem-modal-title">Напоминание</h3>
             <form id="form-reminder" class="space-y-3">
                 <input type="hidden" id="rem-id">
-                <input type="text" id="rem-title" placeholder="Что нужно сделать?" class="w-full border p-2 rounded bg-slate-50" required>
+                <input type="text" id="rem-title" placeholder="Что нужно сделать?" class="w-full border p-3 rounded-xl bg-slate-50" required>
+                
                 <div class="grid grid-cols-2 gap-3">
-                    <input type="number" id="rem-mileage" placeholder="Пробег (км)" class="w-full border p-2 rounded bg-slate-50">
-                    <input type="date" id="rem-date" class="w-full border p-2 rounded bg-slate-50">
+                    <input type="number" id="rem-mileage" placeholder="Пробег (км)" class="w-full border p-3 rounded-xl bg-slate-50">
+                    <input type="date" id="rem-date" class="w-full border p-3 rounded-xl bg-slate-50">
                 </div>
-                <p class="text-[10px] text-slate-400 italic">Заполните пробег, дату или оба поля сразу</p>
+
+                <div class="space-y-2 mt-2">
+                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">Категория для переноса</label>
+                    <select id="rem-category" class="w-full border p-3 rounded-xl bg-slate-50 outline-none focus:border-blue-500">
+                        <option value="">Без категории (список дел)</option>
+                        <option value="service">🔧 ТО (Сервисная книжка)</option>
+                        <option value="tuning">💎 Расходы (Тюнинг/Прочее)</option>
+                        <option value="fuel">⛽ Заправка</option>
+                    </select>
+                </div>
+
                 <div class="flex gap-2 mt-4">
-                    <button type="button" onclick="reminderModal.close()" class="flex-1 bg-slate-200 p-2 rounded font-medium">Отмена</button>
-                    <button type="submit" class="flex-1 bg-blue-600 text-white p-2 rounded font-medium flex justify-center items-center gap-2"><span class="btn-text">Сохранить</span></button>
+                    <button type="button" onclick="reminderModal.close()" class="flex-1 bg-slate-200 p-3 rounded-xl font-medium">Отмена</button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white p-3 rounded-xl font-bold flex justify-center items-center gap-2"><span class="btn-text">Сохранить</span></button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <dialog id="completeTaskModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-sm m-auto top-1/2 -translate-y-1/2">
+        <div class="p-6">
+            <h3 class="text-lg font-bold mb-2">Завершить задачу?</h3>
+            <p id="complete-task-info" class="text-sm text-slate-500 mb-4 font-medium"></p>
+            
+            <form id="form-complete-task" class="space-y-3">
+                <input type="hidden" id="complete-rem-id">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Дата выполнения</label>
+                    <input type="date" id="complete-date" class="w-full border p-2 rounded-lg bg-slate-50">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Сумма ₽ (опционально)</label>
+                    <input type="number" id="complete-cost" placeholder="0" class="w-full border p-2 rounded-lg bg-slate-50">
+                </div>
+                <div class="flex gap-2 mt-4">
+                    <button type="button" onclick="completeTaskModal.close()" class="flex-1 bg-slate-100 p-2 rounded-lg text-slate-500 font-medium">Отмена</button>
+                    <button type="submit" class="flex-1 bg-emerald-500 text-white p-2 rounded-lg font-bold flex justify-center items-center gap-2"><span class="btn-text">Готово</span></button>
                 </div>
             </form>
         </div>
@@ -464,18 +498,38 @@
             form.reset(); 
             document.getElementById('rem-id').value = ''; 
             document.getElementById('rem-date').value = ''; 
+            document.getElementById('rem-category').value = '';
             document.getElementById('rem-modal-title').innerText = 'Новое напоминание'; 
             if (id) { 
                 const r = appState.reminders.find(x => x.id === id); 
                 if (r) { 
-                    document.getElementById('rem-modal-title').innerText = 'Редактировать напоминание'; 
+                    document.getElementById('rem-modal-title').innerText = 'Изменить напоминание'; 
                     document.getElementById('rem-id').value = r.id; 
                     document.getElementById('rem-title').value = r.title; 
                     document.getElementById('rem-mileage').value = r.mileage || ''; 
                     document.getElementById('rem-date').value = r.date || ''; 
+                    document.getElementById('rem-category').value = r.category || '';
                 } 
             } 
             document.getElementById('reminderModal').showModal(); 
+        };
+
+        window.finishReminder = (id) => {
+            const r = appState.reminders.find(x => x.id === id);
+            if (!r) return;
+
+            if (r.category) {
+                document.getElementById('complete-rem-id').value = id;
+                document.getElementById('complete-date').valueAsDate = new Date();
+                document.getElementById('complete-cost').value = '';
+                document.getElementById('complete-task-info').innerText = `Перенос в категорию: ${r.category === 'service' ? 'ТО' : r.category === 'tuning' ? 'Расходы' : 'Заправки'}`;
+                document.getElementById('completeTaskModal').showModal();
+            } else {
+                if(confirm('Отметить задачу как выполненную?')) {
+                    appState.reminders = appState.reminders.filter(i => i.id !== id);
+                    saveData();
+                }
+            }
         };
 
         async function saveData(btnElement = null) {
@@ -558,8 +612,9 @@
             document.getElementById('fuel-month-stats').innerHTML = `${monthFuelLiters.toFixed(1)} л <span class="text-blue-300 font-normal mx-1">|</span> ${monthFuelCost.toLocaleString()} ₽`;
 
             let activeRems = appState.reminders.filter(r => {
-                let mUrgent = r.mileage ? (r.mileage - currentMileage <= 500) : false;
-                let dUrgent = r.date ? (new Date(r.date) <= new Date()) : false;
+                let left = r.mileage ? r.mileage - currentMileage : null;
+                let mUrgent = left !== null && left <= 500;
+                let dUrgent = r.date ? new Date(r.date) <= new Date().setHours(0,0,0,0) : false;
                 return mUrgent || dUrgent;
             });
             document.getElementById('dash-reminders-count').innerText = activeRems.length;
@@ -657,31 +712,58 @@
 
             const remEl = document.getElementById('list-reminders');
             if (!appState.reminders || appState.reminders.length === 0) {
-                remEl.innerHTML = '<div class="p-6 text-center text-slate-400"><i class="fas fa-inbox fa-2x mb-2"></i><br>Нет записей</div>';
+                remEl.innerHTML = '<div class="p-10 text-center text-slate-400"><i class="fas fa-clipboard-list fa-3x mb-3 opacity-20"></i><br>Список дел пуст</div>';
             } else {
-                const sortedRems = [...appState.reminders].sort((a,b) => (a.mileage || 0) - (b.mileage || 0));
+                const sortedRems = [...appState.reminders].sort((a, b) => {
+                    if (a.date && b.date) return new Date(a.date) - new Date(b.date);
+                    if (a.date) return -1;
+                    if (b.date) return 1;
+                    return (a.mileage || 0) - (b.mileage || 0);
+                });
+
                 remEl.innerHTML = sortedRems.map(r => {
                     let left = r.mileage ? r.mileage - currentMileage : null;
-                    let isUrgentByMileage = left !== null && left <= 500;
-                    let isUrgentByDate = r.date ? new Date(r.date) <= new Date() : false;
-                    let isUrgent = isUrgentByMileage || isUrgentByDate;
+                    let isExpiredDate = r.date ? new Date(r.date) <= new Date().setHours(0,0,0,0) : false;
+                    let isUrgentMileage = left !== null && left <= 500;
+                    let isUrgent = isExpiredDate || isUrgentMileage;
 
                     return `
-                    <div class="p-4 mx-4 my-3 bg-white rounded-xl shadow-sm border ${isUrgent ? 'border-red-300 bg-red-50/30' : 'border-slate-100'} flex justify-between items-center hover:shadow-md transition">
-                        <div>
-                            <p class="font-bold text-slate-800 mb-1.5">${r.title}</p>
-                            <div class="flex flex-wrap gap-2">
-                                ${r.mileage ? `<span class="bg-slate-100 text-slate-600 px-2 py-1 rounded-md text-xs font-medium"><i class="fas fa-bullseye mr-1 opacity-70"></i>Цель: ${r.mileage.toLocaleString()} км</span>` : ''}
-                                ${r.date ? `<span class="bg-slate-100 text-slate-600 px-2 py-1 rounded-md text-xs font-medium"><i class="far fa-calendar-alt mr-1 opacity-70"></i>${formatDate(r.date)}</span>` : ''}
-                                ${left !== null ? `<span class="${left <= 500 ? 'bg-red-100 text-red-700' : 'bg-emerald-50 text-emerald-600'} px-2 py-1 rounded-md text-xs font-medium">Осталось: ${left > 0 ? left.toLocaleString() : 0} км</span>` : ''}
+                    <div class="group p-4 mx-4 my-3 bg-white rounded-xl shadow-sm border-l-4 ${isUrgent ? 'border-l-red-500 bg-red-50/30' : 'border-l-blue-500 border-slate-100'} flex justify-between items-center hover:shadow-md transition-all">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2">
+                                ${isUrgent ? '<i class="fas fa-exclamation-circle text-red-500 animate-pulse"></i>' : '<i class="fas fa-thumbtack text-blue-400 text-xs"></i>'}
+                                <p class="font-bold text-slate-800 text-lg">${r.title}</p>
+                            </div>
+                            <div class="flex flex-wrap gap-3 mt-2">
+                                ${r.date ? `
+                                    <span class="flex items-center gap-1.5 text-xs font-semibold ${isExpiredDate ? 'text-red-600' : 'text-slate-500'}">
+                                        <i class="far fa-calendar-alt"></i> ${formatDate(r.date)}
+                                    </span>` : ''}
+                                ${r.mileage ? `
+                                    <span class="flex items-center gap-1.5 text-xs font-semibold ${isUrgentMileage ? 'text-red-600' : 'text-slate-500'}">
+                                        <i class="fas fa-tachometer-alt"></i> ${r.mileage.toLocaleString()} км
+                                    </span>` : ''}
+                                ${left !== null ? `
+                                    <span class="text-[10px] uppercase tracking-wider font-bold ${left <= 500 ? 'text-red-500' : 'text-emerald-500'}">
+                                        ${left > 0 ? `Осталось ${left.toLocaleString()} км` : 'Срок подошел'}
+                                    </span>` : ''}
+                                ${r.category ? `
+                                    <span class="text-[10px] bg-slate-100 text-slate-400 px-2 py-0.5 rounded uppercase">
+                                        ${r.category === 'service' ? 'ТО' : r.category === 'tuning' ? 'Расход' : 'Заправка'}
+                                    </span>` : ''}
                             </div>
                         </div>
-                        <div class="flex gap-2">
-                            <button onclick="openReminderModal(${r.id})" class="text-blue-400 hover:text-blue-600 bg-white shadow-sm border border-slate-100 w-10 h-10 rounded-full flex justify-center items-center transition"><i class="fas fa-pen"></i></button>
-                            <button onclick="deleteItem('reminders', ${r.id})" class="text-emerald-500 hover:text-emerald-700 bg-white shadow-sm border border-slate-100 w-10 h-10 rounded-full flex justify-center items-center transition" title="Выполнено"><i class="fas fa-check"></i></button>
+                        <div class="flex gap-2 ml-4">
+                            <button onclick="openReminderModal(${r.id})" class="text-slate-400 hover:text-blue-600 w-9 h-9 rounded-full bg-slate-50 flex justify-center items-center transition" title="Изменить">
+                                <i class="fas fa-pen text-sm"></i>
+                            </button>
+                            <button onclick="finishReminder(${r.id})" class="text-emerald-500 hover:text-white hover:bg-emerald-500 w-11 h-11 rounded-xl border-2 border-emerald-100 flex justify-center items-center transition-all shadow-sm" title="Выполнить">
+                                <i class="fas fa-check fa-lg"></i>
+                            </button>
                         </div>
                     </div>
-                `}).join('');
+                    `;
+                }).join('');
             }
 
             updateCharts();
@@ -729,17 +811,18 @@
         document.getElementById('form-tuning').onsubmit = async (e) => { e.preventDefault(); const idVal = document.getElementById('tn-id').value; const newData = { id: idVal ? Number(idVal) : Date.now(), date: document.getElementById('tn-date').value, title: document.getElementById('tn-title').value, cost: Number(document.getElementById('tn-cost').value), notes: document.getElementById('tn-notes').value }; if (idVal) { const idx = appState.tuning.findIndex(x => x.id === Number(idVal)); if(idx !== -1) appState.tuning[idx] = newData; } else { appState.tuning.push(newData); } await saveData(e.target.querySelector('button[type="submit"]')); document.getElementById('tuningModal').close(); };
         document.getElementById('form-fuel').onsubmit = async (e) => { e.preventDefault(); const idVal = document.getElementById('fl-id').value; const m = Number(document.getElementById('fl-mileage').value); const newData = { id: idVal ? Number(idVal) : Date.now(), date: document.getElementById('fl-date').value, mileage: m, liters: Number(document.getElementById('fl-liters').value), cost: Number(document.getElementById('fl-cost').value), isFull: document.getElementById('fl-full').checked }; if (idVal) { const idx = appState.fuelings.findIndex(x => x.id === Number(idVal)); if(idx !== -1) appState.fuelings[idx] = newData; } else { appState.fuelings.push(newData); } await saveData(e.target.querySelector('button[type="submit"]')); document.getElementById('fuelModal').close(); };
         
-        // Починенная функция сохранения напоминаний:
         document.getElementById('form-reminder').onsubmit = async (e) => { 
             e.preventDefault(); 
             const idVal = document.getElementById('rem-id').value; 
             const mInput = document.getElementById('rem-mileage').value;
             const dInput = document.getElementById('rem-date').value;
+            const catInput = document.getElementById('rem-category').value;
             const newData = { 
                 id: idVal ? Number(idVal) : Date.now(), 
                 title: document.getElementById('rem-title').value, 
                 mileage: mInput ? Number(mInput) : null,
-                date: dInput ? dInput : null
+                date: dInput ? dInput : null,
+                category: catInput ? catInput : null
             }; 
             if (idVal) { 
                 const idx = appState.reminders.findIndex(x => x.id === Number(idVal)); 
@@ -749,6 +832,45 @@
             } 
             await saveData(e.target.querySelector('button[type="submit"]')); 
             document.getElementById('reminderModal').close(); 
+        };
+
+        // Логика окна "Завершение задачи"
+        document.getElementById('form-complete-task').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const id = Number(document.getElementById('complete-rem-id').value);
+            const r = appState.reminders.find(x => x.id === id);
+            if (!r) return;
+
+            const finalDate = document.getElementById('complete-date').value || new Date().toISOString().split('T')[0];
+            const finalCost = Number(document.getElementById('complete-cost').value) || 0;
+            const currentMileage = getCurrentMileage();
+
+            const historyEntry = {
+                id: Date.now(),
+                date: finalDate,
+                cost: finalCost,
+                mileage: r.mileage || currentMileage
+            };
+
+            if (r.category === 'service') {
+                historyEntry.type = r.title;
+                appState.services.push(historyEntry);
+            } else if (r.category === 'tuning') {
+                historyEntry.title = r.title;
+                appState.tuning.push(historyEntry);
+            } else if (r.category === 'fuel') {
+                historyEntry.liters = 0; 
+                historyEntry.isFull = false;
+                appState.fuelings.push(historyEntry);
+            }
+
+            // Удаляем выполненную задачу
+            appState.reminders = appState.reminders.filter(i => i.id !== id);
+            
+            await saveData(btn);
+            document.getElementById('completeTaskModal').close();
+            showToast('Задача выполнена и перенесена!');
         };
 
         document.querySelectorAll('.tab-btn').forEach(btn => { btn.addEventListener('click', () => { document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active', 'border-blue-600', 'text-blue-600', 'font-bold'); b.classList.add('text-slate-500'); }); btn.classList.add('active', 'border-blue-600', 'text-blue-600', 'font-bold'); btn.classList.remove('text-slate-500'); document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden')); document.getElementById(btn.dataset.target).classList.remove('hidden'); if(btn.dataset.target === 'tab-stats') updateCharts(); }); });
@@ -794,7 +916,6 @@
   }
 </script>
 <script>
-  // Умное открытие Telegram с проверкой сети
   window.openTelegram = () => {
     if (navigator.onLine) {
       window.open('https://t.me/webservicecarbook', '_blank', 'noopener,noreferrer');
@@ -804,7 +925,6 @@
   };
 </script>
 <script>
-// Принудительное обновление кэша при обнаружении новой версии
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(reg => {
     reg.onupdatefound = () => {
