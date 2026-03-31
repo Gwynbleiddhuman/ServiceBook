@@ -50,12 +50,10 @@
             <div class="flex items-center gap-1.5 sm:gap-2 text-base sm:text-xl font-bold truncate">
                 <i class="fas fa-car-side"></i> <span>Service Book</span>
             </div>
-
-                
+            <div class="flex items-center gap-2 sm:gap-4">
                 <span id="user-info" class="text-xs sm:text-sm font-medium flex items-center gap-1">
                     <i class="fas fa-wifi text-red-300" title="Локальный режим"></i> Гость
                 </span>
-                
                 <button id="btn-auth-open" onclick="authModal.showModal()" class="bg-blue-700 hover:bg-blue-800 px-2 sm:px-3 py-1.5 rounded text-xs sm:text-sm transition">Войти</button>
                 <button id="btn-logout" class="bg-red-500 hover:bg-red-600 px-2 sm:px-3 py-1.5 rounded text-xs sm:text-sm transition hidden">Выйти</button>
             </div>
@@ -224,22 +222,107 @@
                 <input type="text" id="auth-name" placeholder="Ваш никнейм" class="w-full border p-3 rounded-lg bg-slate-50 hidden">
                 <input type="email" id="auth-email" required placeholder="Email" class="w-full border p-3 rounded-lg bg-slate-50">
                 <input type="password" id="auth-pass" required placeholder="Пароль" class="w-full border p-3 rounded-lg bg-slate-50">
-                
                 <p class="text-[10px] text-slate-500 text-center leading-tight">
                     Продолжая, вы соглашаетесь с <a href="terms.html" class="text-blue-600 hover:underline">Условиями использования</a> и <a href="privacy.html" class="text-blue-600 hover:underline">Политикой конфиденциальности</a>.
                 </p>
-
                 <button type="button" id="btn-login-submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 transition">Войти</button>
                 <button type="button" id="btn-register-submit" class="w-full bg-emerald-600 text-white p-3 rounded-lg font-bold hover:bg-emerald-700 transition hidden">Создать аккаунт</button>
             </form>
             <button onclick="authModal.close()" class="w-full mt-4 p-2 text-slate-400 hover:text-slate-600">Закрыть</button>
         </div>
     </dialog>
-    <dialog id="carModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-md m-auto top-1/2 -translate-y-1/2"><div class="p-6"><h3 class="text-xl font-bold mb-4">Данные авто</h3><form id="form-car" class="space-y-3"><input type="text" id="car-make" placeholder="Марка и модель (напр. Kia Rio)" class="w-full border p-2 rounded bg-slate-50" required><div class="grid grid-cols-2 gap-3"><input type="number" id="car-year" placeholder="Год выпуска" class="w-full border p-2 rounded bg-slate-50"><input type="text" id="car-plate" placeholder="Гос. номер" class="w-full border p-2 rounded bg-slate-50"></div><input type="number" id="car-mileage" placeholder="Текущий пробег (км)" class="w-full border p-2 rounded bg-slate-50" required><div class="flex gap-2 mt-4"><button type="button" onclick="carModal.close()" class="flex-1 bg-slate-200 p-2 rounded font-medium">Отмена</button><button type="submit" class="flex-1 bg-blue-600 text-white p-2 rounded font-medium">Сохранить</button></div></form></div></dialog>
-    <dialog id="serviceModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-md m-auto top-1/2 -translate-y-1/2"><div class="p-6"><h3 class="text-xl font-bold mb-4" id="srv-modal-title">Запись о ТО</h3><form id="form-service" class="space-y-3"><input type="hidden" id="srv-id"><input type="date" id="srv-date" class="w-full border p-2 rounded bg-slate-50" required><input type="text" id="srv-type" placeholder="Тип работ (Масло, фильтры...)" class="w-full border p-2 rounded bg-slate-50" required><div class="grid grid-cols-2 gap-3"><input type="number" id="srv-mileage" placeholder="Пробег (необязательно)" class="w-full border p-2 rounded bg-slate-50"><input type="number" id="srv-cost" placeholder="Стоимость (₽)" class="w-full border p-2 rounded bg-slate-50" required></div><div class="flex gap-2 mt-4"><button type="button" onclick="serviceModal.close()" class="flex-1 bg-slate-200 p-2 rounded font-medium">Отмена</button><button type="submit" class="flex-1 bg-blue-600 text-white p-2 rounded font-medium flex justify-center items-center gap-2"><span class="btn-text">Сохранить</span></button></div></form></div></dialog>
-    <dialog id="tuningModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-md m-auto top-1/2 -translate-y-1/2"><div class="p-6"><h3 class="text-xl font-bold mb-4" id="tn-modal-title">Новая доработка</h3><form id="form-tuning" class="space-y-3"><input type="hidden" id="tn-id"><input type="date" id="tn-date" class="w-full border p-2 rounded bg-slate-50" required><input type="text" id="tn-title" placeholder="Что сделали? (напр. Тонировка, Диски)" class="w-full border p-2 rounded bg-slate-50" required><input type="number" id="tn-cost" placeholder="Стоимость (₽)" class="w-full border p-2 rounded bg-slate-50" required><textarea id="tn-notes" placeholder="Описание / Заметки" rows="2" class="w-full border p-2 rounded bg-slate-50"></textarea><div class="flex gap-2 mt-4"><button type="button" onclick="tuningModal.close()" class="flex-1 bg-slate-200 p-2 rounded font-medium">Отмена</button><button type="submit" class="flex-1 bg-purple-600 text-white p-2 rounded font-medium flex justify-center items-center gap-2"><span class="btn-text">Сохранить</span></button></div></form></div></dialog>
-    <dialog id="fuelModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-md m-auto top-1/2 -translate-y-1/2"><div class="p-6"><h3 class="text-xl font-bold mb-4" id="fl-modal-title">Заправка</h3><form id="form-fuel" class="space-y-3"><input type="hidden" id="fl-id"><input type="date" id="fl-date" class="w-full border p-2 rounded bg-slate-50" required><input type="number" id="fl-mileage" placeholder="Пробег (необязательно)" class="w-full border p-2 rounded bg-slate-50"><div class="grid grid-cols-2 gap-3"><input type="number" step="0.1" id="fl-liters" placeholder="Литров" class="w-full border p-2 rounded bg-slate-50" required><input type="number" id="fl-cost" placeholder="Сумма (₽)" class="w-full border p-2 rounded bg-slate-50" required></div><label class="flex items-center gap-2 cursor-pointer mt-2"><input type="checkbox" id="fl-full" class="w-5 h-5 rounded text-blue-600" checked><span>Заправка до полного бака</span></label><div class="flex gap-2 mt-4"><button type="button" onclick="fuelModal.close()" class="flex-1 bg-slate-200 p-2 rounded font-medium">Отмена</button><button type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded font-medium flex justify-center items-center gap-2"><span class="btn-text">Сохранить</span></button></div></form></div></dialog>
-    <dialog id="reminderModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-md m-auto top-1/2 -translate-y-1/2"><div class="p-6"><h3 class="text-xl font-bold mb-4" id="rem-modal-title">Напоминание</h3><form id="form-reminder" class="space-y-3"><input type="hidden" id="rem-id"><input type="text" id="rem-title" placeholder="Что нужно сделать?" class="w-full border p-2 rounded bg-slate-50" required><input type="number" id="rem-mileage" placeholder="На каком пробеге? (км)" class="w-full border p-2 rounded bg-slate-50" required><div class="flex gap-2 mt-4"><button type="button" onclick="reminderModal.close()" class="flex-1 bg-slate-200 p-2 rounded font-medium">Отмена</button><button type="submit" class="flex-1 bg-blue-600 text-white p-2 rounded font-medium flex justify-center items-center gap-2"><span class="btn-text">Сохранить</span></button></div></form></div></dialog>
+
+    <dialog id="carModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-md m-auto top-1/2 -translate-y-1/2">
+        <div class="p-6">
+            <h3 class="text-xl font-bold mb-4">Данные авто</h3>
+            <form id="form-car" class="space-y-3">
+                <input type="text" id="car-make" placeholder="Марка и модель (напр. Kia Rio)" class="w-full border p-2 rounded bg-slate-50" required>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="number" id="car-year" placeholder="Год выпуска" class="w-full border p-2 rounded bg-slate-50">
+                    <input type="text" id="car-plate" placeholder="Гос. номер" class="w-full border p-2 rounded bg-slate-50">
+                </div>
+                <input type="number" id="car-mileage" placeholder="Укажите пробег (км)" class="w-full border p-2 rounded bg-slate-50" required>
+                <div class="flex gap-2 mt-4">
+                    <button type="button" onclick="carModal.close()" class="flex-1 bg-slate-200 p-2 rounded font-medium">Отмена</button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white p-2 rounded font-medium">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <dialog id="serviceModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-md m-auto top-1/2 -translate-y-1/2">
+        <div class="p-6">
+            <h3 class="text-xl font-bold mb-4" id="srv-modal-title">Запись о ТО</h3>
+            <form id="form-service" class="space-y-3">
+                <input type="hidden" id="srv-id">
+                <input type="date" id="srv-date" class="w-full border p-2 rounded bg-slate-50" required>
+                <input type="text" id="srv-type" placeholder="Тип работ (Масло, фильтры...)" class="w-full border p-2 rounded bg-slate-50" required>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="number" id="srv-mileage" placeholder="Пробег (необязательно)" class="w-full border p-2 rounded bg-slate-50">
+                    <input type="number" id="srv-cost" placeholder="Стоимость (₽)" class="w-full border p-2 rounded bg-slate-50" required>
+                </div>
+                <div class="flex gap-2 mt-4">
+                    <button type="button" onclick="serviceModal.close()" class="flex-1 bg-slate-200 p-2 rounded font-medium">Отмена</button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white p-2 rounded font-medium flex justify-center items-center gap-2"><span class="btn-text">Сохранить</span></button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <dialog id="tuningModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-md m-auto top-1/2 -translate-y-1/2">
+        <div class="p-6">
+            <h3 class="text-xl font-bold mb-4" id="tn-modal-title">Новая доработка</h3>
+            <form id="form-tuning" class="space-y-3">
+                <input type="hidden" id="tn-id">
+                <input type="date" id="tn-date" class="w-full border p-2 rounded bg-slate-50" required>
+                <input type="text" id="tn-title" placeholder="Что сделали? (напр. Тонировка, Диски)" class="w-full border p-2 rounded bg-slate-50" required>
+                <input type="number" id="tn-cost" placeholder="Стоимость (₽)" class="w-full border p-2 rounded bg-slate-50" required>
+                <textarea id="tn-notes" placeholder="Описание / Заметки" rows="2" class="w-full border p-2 rounded bg-slate-50"></textarea>
+                <div class="flex gap-2 mt-4">
+                    <button type="button" onclick="tuningModal.close()" class="flex-1 bg-slate-200 p-2 rounded font-medium">Отмена</button>
+                    <button type="submit" class="flex-1 bg-purple-600 text-white p-2 rounded font-medium flex justify-center items-center gap-2"><span class="btn-text">Сохранить</span></button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <dialog id="fuelModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-md m-auto top-1/2 -translate-y-1/2">
+        <div class="p-6">
+            <h3 class="text-xl font-bold mb-4" id="fl-modal-title">Заправка</h3>
+            <form id="form-fuel" class="space-y-3">
+                <input type="hidden" id="fl-id">
+                <input type="date" id="fl-date" class="w-full border p-2 rounded bg-slate-50" required>
+                <input type="number" id="fl-mileage" placeholder="Пробег (необязательно)" class="w-full border p-2 rounded bg-slate-50">
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="number" step="0.1" id="fl-liters" placeholder="Литров" class="w-full border p-2 rounded bg-slate-50" required>
+                    <input type="number" id="fl-cost" placeholder="Сумма (₽)" class="w-full border p-2 rounded bg-slate-50" required>
+                </div>
+                <label class="flex items-center gap-2 cursor-pointer mt-2">
+                    <input type="checkbox" id="fl-full" class="w-5 h-5 rounded text-blue-600" checked>
+                    <span>Заправка до полного бака</span>
+                </label>
+                <div class="flex gap-2 mt-4">
+                    <button type="button" onclick="fuelModal.close()" class="flex-1 bg-slate-200 p-2 rounded font-medium">Отмена</button>
+                    <button type="submit" class="flex-1 bg-emerald-600 text-white p-2 rounded font-medium flex justify-center items-center gap-2"><span class="btn-text">Сохранить</span></button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <dialog id="reminderModal" class="p-0 rounded-2xl shadow-2xl w-full max-w-md m-auto top-1/2 -translate-y-1/2">
+        <div class="p-6">
+            <h3 class="text-xl font-bold mb-4" id="rem-modal-title">Напоминание</h3>
+            <form id="form-reminder" class="space-y-3">
+                <input type="hidden" id="rem-id">
+                <input type="text" id="rem-title" placeholder="Что нужно сделать?" class="w-full border p-2 rounded bg-slate-50" required>
+                <input type="number" id="rem-mileage" placeholder="На каком пробеге? (км)" class="w-full border p-2 rounded bg-slate-50" required>
+                <div class="flex gap-2 mt-4">
+                    <button type="button" onclick="reminderModal.close()" class="flex-1 bg-slate-200 p-2 rounded font-medium">Отмена</button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white p-2 rounded font-medium flex justify-center items-center gap-2"><span class="btn-text">Сохранить</span></button>
+                </div>
+            </form>
+        </div>
+    </dialog>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
@@ -302,11 +385,92 @@
 
         window.renameUser = async () => { if (!currentUser) return; const newName = prompt('Введите новый никнейм:', currentUser.displayName || ''); if (newName && newName.trim() !== '') { try { await updateProfile(currentUser, { displayName: newName.trim() }); document.getElementById('user-info').innerHTML = `<i class="fas fa-cloud text-blue-300"></i> <span class="cursor-pointer border-b border-dashed hover:text-blue-200" onclick="renameUser()">${newName.trim()}</span>`; showToast('Никнейм обновлен!'); } catch (e) { showToast('Ошибка при обновлении', 'error'); } } };
 
-        window.openCarModal = () => { document.getElementById('car-make').value = appState.car.make  ''; document.getElementById('car-year').value = appState.car.year  ''; document.getElementById('car-plate').value = appState.car.plate || ''; let cm = getCurrentMileage(); document.getElementById('car-mileage').value = cm > 0 ? cm : ''; document.getElementById('carModal').showModal(); };
-        window.openServiceModal = (id = null) => { const form = document.getElementById('form-service'); form.reset(); document.getElementById('srv-id').value = ''; document.getElementById('srv-date').valueAsDate = new Date(); document.getElementById('srv-modal-title').innerText = 'Новая запись о ТО'; if (id) { const s = appState.services.find(x => x.id === id); if (s) { document.getElementById('srv-modal-title').innerText = 'Редактировать ТО'; document.getElementById('srv-id').value = s.id; document.getElementById('srv-date').value = s.date; document.getElementById('srv-type').value = s.type; document.getElementById('srv-mileage').value = s.mileage; document.getElementById('srv-cost').value = s.cost; } } document.getElementById('serviceModal').showModal(); };
-        window.openTuningModal = (id = null) => { const form = document.getElementById('form-tuning'); form.reset(); document.getElementById('tn-id').value = ''; document.getElementById('tn-date').valueAsDate = new Date(); document.getElementById('tn-modal-title').innerText = 'Новая доработка'; if (id) { const t = (appState.tuning || []).find(x => x.id === id); if (t) { document.getElementById('tn-modal-title').innerText = 'Редактировать доработку'; document.getElementById('tn-id').value = t.id; document.getElementById('tn-date').value = t.date; document.getElementById('tn-title').value = t.title; document.getElementById('tn-cost').value = t.cost; document.getElementById('tn-notes').value = t.notes || ''; } } document.getElementById('tuningModal').showModal(); };
-        window.openFuelModal = (id = null) => { const form = document.getElementById('form-fuel'); form.reset(); document.getElementById('fl-id').value = ''; document.getElementById('fl-date').valueAsDate = new Date(); document.getElementById('fl-modal-title').innerText = 'Новая заправка'; if (id) { const f = appState.fuelings.find(x => x.id === id); if (f) { document.getElementById('fl-modal-title').innerText = 'Редактировать заправку'; document.getElementById('fl-id').value = f.id; document.getElementById('fl-date').value = f.date; document.getElementById('fl-mileage').value = f.mileage; document.getElementById('fl-liters').value = f.liters; document.getElementById('fl-cost').value = f.cost; document.getElementById('fl-full').checked = f.isFull; } } document.getElementById('fuelModal').showModal(); };
-        window.openReminderModal = (id = null) => { const form = document.getElementById('form-reminder'); form.reset(); document.getElementById('rem-id').value = ''; document.getElementById('rem-modal-title').innerText = 'Новое напоминание'; if (id) { const r = appState.reminders.find(x => x.id === id); if (r) { document.getElementById('rem-modal-title').innerText = 'Редактировать напоминание'; document.getElementById('rem-id').value = r.id; document.getElementById('rem-title').value = r.title; document.getElementById('rem-mileage').value = r.mileage; } } document.getElementById('reminderModal').showModal(); };
+        window.openCarModal = () => { 
+            document.getElementById('car-make').value = appState.car.make || ''; 
+            document.getElementById('car-year').value = appState.car.year || ''; 
+            document.getElementById('car-plate').value = appState.car.plate || ''; 
+            let cm = getCurrentMileage(); 
+            document.getElementById('car-mileage').value = cm > 0 ? cm : ''; 
+            document.getElementById('carModal').showModal(); 
+        };
+
+        window.openServiceModal = (id = null) => { 
+            const form = document.getElementById('form-service'); 
+            form.reset(); 
+            document.getElementById('srv-id').value = ''; 
+            document.getElementById('srv-date').valueAsDate = new Date(); 
+            document.getElementById('srv-modal-title').innerText = 'Новая запись о ТО'; 
+            if (id) { 
+                const s = appState.services.find(x => x.id === id); 
+                if (s) { 
+                    document.getElementById('srv-modal-title').innerText = 'Редактировать ТО'; 
+                    document.getElementById('srv-id').value = s.id; 
+                    document.getElementById('srv-date').value = s.date; 
+                    document.getElementById('srv-type').value = s.type; 
+                    document.getElementById('srv-mileage').value = s.mileage; 
+                    document.getElementById('srv-cost').value = s.cost; 
+                } 
+            } 
+            document.getElementById('serviceModal').showModal(); 
+        };
+
+        window.openTuningModal = (id = null) => { 
+            const form = document.getElementById('form-tuning'); 
+            form.reset(); 
+            document.getElementById('tn-id').value = ''; 
+            document.getElementById('tn-date').valueAsDate = new Date(); 
+            document.getElementById('tn-modal-title').innerText = 'Новая доработка'; 
+            if (id) { 
+                const t = (appState.tuning || []).find(x => x.id === id); 
+                if (t) { 
+                    document.getElementById('tn-modal-title').innerText = 'Редактировать доработку'; 
+                    document.getElementById('tn-id').value = t.id; 
+                    document.getElementById('tn-date').value = t.date; 
+                    document.getElementById('tn-title').value = t.title; 
+                    document.getElementById('tn-cost').value = t.cost; 
+                    document.getElementById('tn-notes').value = t.notes || ''; 
+                } 
+            } 
+            document.getElementById('tuningModal').showModal(); 
+        };
+
+        window.openFuelModal = (id = null) => { 
+            const form = document.getElementById('form-fuel'); 
+            form.reset(); 
+            document.getElementById('fl-id').value = ''; 
+            document.getElementById('fl-date').valueAsDate = new Date(); 
+            document.getElementById('fl-modal-title').innerText = 'Новая заправка'; 
+            if (id) { 
+                const f = appState.fuelings.find(x => x.id === id); 
+                if (f) { 
+                    document.getElementById('fl-modal-title').innerText = 'Редактировать заправку'; 
+                    document.getElementById('fl-id').value = f.id; 
+                    document.getElementById('fl-date').value = f.date; 
+                    document.getElementById('fl-mileage').value = f.mileage; 
+                    document.getElementById('fl-liters').value = f.liters; 
+                    document.getElementById('fl-cost').value = f.cost; 
+                    document.getElementById('fl-full').checked = f.isFull; 
+                } 
+            } 
+            document.getElementById('fuelModal').showModal(); 
+        };
+
+        window.openReminderModal = (id = null) => { 
+            const form = document.getElementById('form-reminder'); 
+            form.reset(); 
+            document.getElementById('rem-id').value = ''; 
+            document.getElementById('rem-modal-title').innerText = 'Новое напоминание'; 
+            if (id) { 
+                const r = appState.reminders.find(x => x.id === id); 
+                if (r) { 
+                    document.getElementById('rem-modal-title').innerText = 'Редактировать напоминание'; 
+                    document.getElementById('rem-id').value = r.id; 
+                    document.getElementById('rem-title').value = r.title; 
+                    document.getElementById('rem-mileage').value = r.mileage; 
+                } 
+            } 
+            document.getElementById('reminderModal').showModal(); 
+        };
 
         async function saveData(btnElement = null) {
             let originalText = '';
@@ -352,7 +516,7 @@
             appState.tuning = appState.tuning || [];
 
             const currentMileage = getCurrentMileage();
-            
+
             document.getElementById('display-car-name').innerText = appState.car.make || 'Мой Автомобиль';
             document.getElementById('display-car-details').innerText = `${appState.car.year || ''} ${appState.car.plate ? `| Гос.номер: ${appState.car.plate}` : ''}`;
             document.getElementById('display-mileage').innerText = currentMileage.toLocaleString();
@@ -383,7 +547,7 @@
             let monthFuel = appState.fuelings.filter(f => isThisMonth(f.date));
             let monthFuelCost = monthFuel.reduce((acc, f) => acc + Number(f.cost), 0);
             let monthFuelLiters = monthFuel.reduce((acc, f) => acc + Number(f.liters), 0);
-            
+
             document.getElementById('fuel-total-stats').innerHTML = `${totalFuelLiters.toFixed(1)} л <span class="text-slate-300 font-normal mx-1">|</span> ${totalFuelCost.toLocaleString()} ₽`;
             document.getElementById('fuel-month-stats').innerHTML = `${monthFuelLiters.toFixed(1)} л <span class="text-blue-300 font-normal mx-1">|</span> ${monthFuelCost.toLocaleString()} ₽`;
 
@@ -420,7 +584,6 @@
                 `).join('');
             }
 
-            // Получаем выбранные значения сортировки
             const sortSrv = document.getElementById('sort-service') ? document.getElementById('sort-service').value : 'date-desc';
             const sortTn = document.getElementById('sort-tuning') ? document.getElementById('sort-tuning').value : 'date-desc';
             const sortFl = document.getElementById('sort-fuel') ? document.getElementById('sort-fuel').value : 'date-desc';
@@ -431,7 +594,7 @@
                         <p class="font-bold text-slate-800 text-base mb-1.5">${s.type}</p>
                         <div class="flex flex-wrap gap-2">
                             <span class="bg-slate-100 text-slate-600 px-2 py-1 rounded-md text-xs font-medium"><i class="far fa-calendar-alt mr-1 opacity-70"></i>${formatDate(s.date)}</span>
-                            ${s.mileage ? <span class="bg-blue-50 text-blue-600 px-2 py-1 rounded-md text-xs font-medium"><i class="fas fa-route mr-1 opacity-70"></i>${s.mileage.toLocaleString()} км</span> : ''}
+                            ${s.mileage ? `<span class="bg-blue-50 text-blue-600 px-2 py-1 rounded-md text-xs font-medium"><i class="fas fa-route mr-1 opacity-70"></i>${s.mileage.toLocaleString()} км</span>` : ''}
                         </div>
                     </div>
                     <div class="flex flex-col items-end gap-2">
@@ -469,7 +632,7 @@
                         <p class="font-bold text-slate-800 text-base mb-1.5">Заправка ${f.liters} л. ${f.isFull ? '<span class="bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded uppercase ml-1 align-middle">Полный</span>' : ''}</p>
                         <div class="flex flex-wrap gap-2">
                             <span class="bg-slate-100 text-slate-600 px-2 py-1 rounded-md text-xs font-medium"><i class="far fa-calendar-alt mr-1 opacity-70"></i>${formatDate(f.date)}</span>
-                            ${f.mileage ? <span class="bg-blue-50 text-blue-600 px-2 py-1 rounded-md text-xs font-medium"><i class="fas fa-route mr-1 opacity-70"></i>${f.mileage.toLocaleString()} км</span> : ''}
+                            ${f.mileage ? `<span class="bg-blue-50 text-blue-600 px-2 py-1 rounded-md text-xs font-medium"><i class="fas fa-route mr-1 opacity-70"></i>${f.mileage.toLocaleString()} км</span>` : ''}
                         </div>
                     </div>
                     <div class="flex flex-col items-end gap-2">
@@ -510,31 +673,27 @@
             updateCharts();
         }
 
-        // Обновленная функция рендера с учетом выбранной сортировки
         function renderGroupedList(elementId, dataArray, templateFn, sortType = 'date-desc') {
             const el = document.getElementById(elementId);
             if (!dataArray || dataArray.length === 0) {
                 el.innerHTML = '<div class="p-6 text-center text-slate-400"><i class="fas fa-inbox fa-2x mb-2"></i><br>Нет записей</div>';
                 return;
             }
-            
+
             let sorted = [...dataArray];
-            
-            // Применяем логику сортировки
             if (sortType === 'date-desc') sorted.sort((a,b) => new Date(b.date) - new Date(a.date));
             else if (sortType === 'date-asc') sorted.sort((a,b) => new Date(a.date) - new Date(b.date));
             else if (sortType === 'cost-desc') sorted.sort((a,b) => Number(b.cost) - Number(a.cost));
             else if (sortType === 'cost-asc') sorted.sort((a,b) => Number(a.cost) - Number(b.cost));
-            
+
             let html = '';
             let currentMonthStr = '';
 
             sorted.forEach(item => {
-                // Группируем по месяцам только если включена сортировка по дате
                 if(item.date && sortType.startsWith('date')) {
                     const itemDate = new Date(item.date);
                     const monthStr = itemDate.toLocaleString('ru-RU', { month: 'long', year: 'numeric' });
-                    
+
                     if (monthStr !== currentMonthStr) {
                         currentMonthStr = monthStr;
                         const colorClass = monthColors[itemDate.getMonth()];
