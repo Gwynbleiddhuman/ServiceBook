@@ -239,31 +239,31 @@
                     <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Эмблема марки</label>
                     <select id="car-brand" class="w-full border p-2 rounded bg-slate-50 outline-none focus:border-blue-500">
                         <option value="">Стандартная иконка авто</option>
-                        <option value="audi">Audi</option>
-                        <option value="bmw">BMW</option>
-                        <option value="chery">Chery</option>
-                        <option value="chevrolet">Chevrolet</option>
-                        <option value="ford">Ford</option>
-                        <option value="geely">Geely</option>
-                        <option value="haval">Haval</option>
-                        <option value="honda">Honda</option>
-                        <option value="hyundai">Hyundai</option>
-                        <option value="kia">Kia</option>
-                        <option value="lada">Lada (ВАЗ)</option>
-                        <option value="lexus">Lexus</option>
-                        <option value="mazda">Mazda</option>
-                        <option value="mercedes">Mercedes-Benz</option>
-                        <option value="mitsubishi">Mitsubishi</option>
-                        <option value="nissan">Nissan</option>
-                        <option value="opel">Opel</option>
-                        <option value="peugeot">Peugeot</option>
-                        <option value="renault">Renault</option>
-                        <option value="skoda">Skoda</option>
-                        <option value="subaru">Subaru</option>
-                        <option value="suzuki">Suzuki</option>
-                        <option value="toyota">Toyota</option>
-                        <option value="volkswagen">Volkswagen</option>
-                        <option value="volvo">Volvo</option>
+                        <option value="audi.com">Audi</option>
+                        <option value="bmw.com">BMW</option>
+                        <option value="cheryinternational.com">Chery</option>
+                        <option value="chevrolet.com">Chevrolet</option>
+                        <option value="ford.com">Ford</option>
+                        <option value="geely.com">Geely</option>
+                        <option value="haval-global.com">Haval</option>
+                        <option value="honda.com">Honda</option>
+                        <option value="hyundai.com">Hyundai</option>
+                        <option value="kia.com">Kia</option>
+                        <option value="lada.ru">Lada (ВАЗ)</option>
+                        <option value="lexus.com">Lexus</option>
+                        <option value="mazda.com">Mazda</option>
+                        <option value="mercedes-benz.com">Mercedes-Benz</option>
+                        <option value="mitsubishicars.com">Mitsubishi</option>
+                        <option value="nissanusa.com">Nissan</option>
+                        <option value="opel.com">Opel</option>
+                        <option value="peugeot.com">Peugeot</option>
+                        <option value="renault.com">Renault</option>
+                        <option value="skoda-auto.com">Skoda</option>
+                        <option value="subaru.com">Subaru</option>
+                        <option value="globalsuzuki.com">Suzuki</option>
+                        <option value="toyota.com">Toyota</option>
+                        <option value="vw.com">Volkswagen</option>
+                        <option value="volvocars.com">Volvo</option>
                     </select>
                 </div>
 
@@ -643,14 +643,16 @@
             document.getElementById('display-car-details').innerText = `${appState.car.year || ''} ${appState.car.plate ? `| Гос.номер: ${appState.car.plate}` : ''}`;
             document.getElementById('display-mileage').innerText = currentMileage.toLocaleString();
 
-            // Обновляем логотип авто
+            // ВСТАВКА БЕЗОПАСНОГО ЛОГОТИПА
             const logoContainer = document.getElementById('car-logo-container');
             if (appState.car.brandId) {
-                // Если марка выбрана, грузим логотип с бесплатного CDN
-                logoContainer.innerHTML = `<img src="https://cdn.jsdelivr.net/gh/filippella/Car-Logos-Dataset@master/logos/thumb/${appState.car.brandId}.png" class="w-10 h-10 object-contain" onerror="this.outerHTML='<i class=\\'fas fa-car text-blue-600 text-2xl\\'></i>'">`;
+                // Если картинка не загрузится (например, нет интернета), onerror спрячет тег <img> и покажет соседний тег <i>
+                logoContainer.innerHTML = `
+                    <img src="https://logo.clearbit.com/${appState.car.brandId}" class="w-10 h-10 object-contain rounded" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <i class="fas fa-car text-blue-600 text-2xl" style="display:none;"></i>
+                `;
                 logoContainer.className = "bg-white p-2 rounded-full shadow-sm w-14 h-14 flex items-center justify-center border border-slate-100 shrink-0 transition-all";
             } else {
-                // Если марки нет, показываем синюю иконку
                 logoContainer.innerHTML = '<i class="fas fa-car text-2xl"></i>';
                 logoContainer.className = "bg-blue-100 p-4 rounded-full text-blue-600 flex items-center justify-center w-14 h-14 shrink-0 transition-all";
             }
@@ -929,4 +931,36 @@
     if (navigator.share) {
       navigator.share({
         title: 'Service Book',
-        text: 'Удоб
+        text: 'Удобная сервисная книжка для учета расходов на авто. Рекомендую!',
+        url: 'https://servicecarbook.ru'
+      }).catch(console.error);
+    } else {
+      alert('Скопируйте ссылку для друга: https://servicecarbook.ru');
+    }
+  }
+</script>
+<script>
+  window.openTelegram = () => {
+    if (navigator.onLine) {
+      window.open('https://t.me/webservicecarbook', '_blank', 'noopener,noreferrer');
+    } else {
+      showToast('Нет подключения к интернету', 'error');
+    }
+  };
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').then(reg => {
+    reg.onupdatefound = () => {
+      const installingWorker = reg.installing;
+      installingWorker.onstatechange = () => {
+        if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          window.location.reload();
+        }
+      };
+    };
+  });
+}
+</script>
+</body>
+</html>
