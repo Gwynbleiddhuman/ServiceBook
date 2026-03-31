@@ -16,6 +16,10 @@
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         .safe-scroll-x { touch-action: pan-x; overscroll-behavior-x: contain; }
+        
+        /* Скрытие стандартного маркера details/summary в браузерах */
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
     </style>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2563eb">
@@ -93,9 +97,15 @@
             <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="font-bold text-lg text-slate-800"><i class="fas fa-clipboard-check text-purple-500 mr-2"></i>Мои задачи</h3>
-                    <button onclick="document.querySelector('[data-target=\\'tab-reminders\\']').click()" class="text-blue-600 text-sm hover:underline font-medium">Все задачи</button>
+                    <button onclick="document.querySelector('.tab-btn[data-target=\'tab-reminders\']').click()" class="text-blue-600 text-sm hover:underline font-medium">Все задачи</button>
                 </div>
-                <div id="dash-tasks-list" class="space-y-3"></div>
+                <details class="group">
+                    <summary class="cursor-pointer flex justify-between items-center text-sm font-medium text-slate-500 bg-slate-50 p-3 rounded-lg hover:bg-slate-100 transition border border-slate-100">
+                        <span>Показать список задач</span>
+                        <i class="fas fa-chevron-down group-open:rotate-180 transition-transform"></i>
+                    </summary>
+                    <div id="dash-tasks-list" class="space-y-3 mt-3 max-h-72 overflow-y-auto pr-2 scrollbar-hide"></div>
+                </details>
             </div>
 
             <div class="grid grid-cols-3 gap-3">
@@ -195,11 +205,7 @@
                     <canvas id="chart-line" class="w-full max-h-[300px]"></canvas>
                 </div>
             </div>
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex gap-4 justify-center">
-                <button onclick="exportData()" class="px-4 py-2 border border-slate-300 rounded text-sm hover:bg-slate-50"><i class="fas fa-download"></i> Сохранить бэкап</button>
-                <input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(event)">
-                <button onclick="document.getElementById('import-file').click()" class="px-4 py-2 border border-slate-300 rounded text-sm hover:bg-slate-50"><i class="fas fa-upload"></i> Загрузить бэкап</button>
-            </div>
+            
             <div class="flex justify-center mt-2 pb-4">
                 <button onclick="shareApp()" class="flex items-center gap-2 bg-blue-50 text-blue-700 px-6 py-3 rounded-xl font-bold hover:bg-blue-100 transition active:scale-95 border border-blue-100 shadow-sm w-full md:w-auto justify-center">
                     <i class="fas fa-share-nodes fa-lg"></i> Поделиться приложением
@@ -242,7 +248,7 @@
             <h3 class="text-xl font-bold mb-4">Данные авто</h3>
             <form id="form-car" class="space-y-3">
                 <input type="text" id="car-make" placeholder="Модель (напр. Rio)" class="w-full border p-2 rounded bg-slate-50" required>
-                
+
                 <div class="space-y-1">
                     <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Эмблема марки</label>
                     <select id="car-brand" class="w-full border p-2 rounded bg-slate-50 outline-none focus:border-blue-500">
@@ -353,7 +359,7 @@
             <form id="form-reminder" class="space-y-3">
                 <input type="hidden" id="rem-id">
                 <input type="text" id="rem-title" placeholder="Что нужно сделать?" class="w-full border p-3 rounded-xl bg-slate-50" required>
-                
+
                 <div class="grid grid-cols-2 gap-3">
                     <input type="number" id="rem-mileage" placeholder="Пробег (км)" class="w-full border p-3 rounded-xl bg-slate-50">
                     <input type="date" id="rem-date" class="w-full border p-3 rounded-xl bg-slate-50">
@@ -381,7 +387,7 @@
         <div class="p-6">
             <h3 class="text-lg font-bold mb-2">Завершить задачу?</h3>
             <p id="complete-task-info" class="text-sm text-slate-500 mb-4 font-medium"></p>
-            
+
             <form id="form-complete-task" class="space-y-3">
                 <input type="hidden" id="complete-rem-id">
                 <div>
@@ -587,7 +593,7 @@
             const local = localStorage.getItem('autoBookState');
             if (local) appState = JSON.parse(local);
             else appState = { car: { make: '', year: '', plate: '', mileage: 0, brandId: '' }, services: [], tuning: [], fuelings: [], reminders: [] };
-            
+
             if (!appState.car) appState.car = { make: '', year: '', plate: '', mileage: 0, brandId: '' };
             if (!appState.car.brandId) appState.car.brandId = '';
 
@@ -651,7 +657,6 @@
             document.getElementById('display-car-details').innerText = `${appState.car.year || ''} ${appState.car.plate ? `| Гос.номер: ${appState.car.plate}` : ''}`;
             document.getElementById('display-mileage').innerText = currentMileage.toLocaleString();
 
-            // ВСТАВКА НАДЕЖНОГО ЛОГОТИПА GOOGLE FAVICONS
             const logoContainer = document.getElementById('car-logo-container');
             if (appState.car.brandId) {
                 logoContainer.innerHTML = `
@@ -705,7 +710,7 @@
             if (sortedRems.length === 0) {
                 dashTasksContainer.innerHTML = '<div class="text-center text-slate-400 py-3 text-sm">Все задачи выполнены!</div>';
             } else {
-                dashTasksContainer.innerHTML = sortedRems.slice(0, 3).map(r => renderTaskHtml(r, currentMileage)).join('');
+                dashTasksContainer.innerHTML = sortedRems.map(r => renderTaskHtml(r, currentMileage)).join('');
             }
 
             const remEl = document.getElementById('list-reminders');
@@ -849,7 +854,7 @@
         document.getElementById('form-service').onsubmit = async (e) => { e.preventDefault(); const idVal = document.getElementById('srv-id').value; const m = Number(document.getElementById('srv-mileage').value); const newData = { id: idVal ? Number(idVal) : Date.now(), date: document.getElementById('srv-date').value, type: document.getElementById('srv-type').value, mileage: m, cost: Number(document.getElementById('srv-cost').value) }; if (idVal) { const idx = appState.services.findIndex(x => x.id === Number(idVal)); if(idx !== -1) appState.services[idx] = newData; } else { appState.services.push(newData); } await saveData(e.target.querySelector('button[type="submit"]')); document.getElementById('serviceModal').close(); };
         document.getElementById('form-tuning').onsubmit = async (e) => { e.preventDefault(); const idVal = document.getElementById('tn-id').value; const newData = { id: idVal ? Number(idVal) : Date.now(), date: document.getElementById('tn-date').value, title: document.getElementById('tn-title').value, cost: Number(document.getElementById('tn-cost').value), notes: document.getElementById('tn-notes').value }; if (idVal) { const idx = appState.tuning.findIndex(x => x.id === Number(idVal)); if(idx !== -1) appState.tuning[idx] = newData; } else { appState.tuning.push(newData); } await saveData(e.target.querySelector('button[type="submit"]')); document.getElementById('tuningModal').close(); };
         document.getElementById('form-fuel').onsubmit = async (e) => { e.preventDefault(); const idVal = document.getElementById('fl-id').value; const m = Number(document.getElementById('fl-mileage').value); const newData = { id: idVal ? Number(idVal) : Date.now(), date: document.getElementById('fl-date').value, mileage: m, liters: Number(document.getElementById('fl-liters').value), cost: Number(document.getElementById('fl-cost').value), isFull: document.getElementById('fl-full').checked }; if (idVal) { const idx = appState.fuelings.findIndex(x => x.id === Number(idVal)); if(idx !== -1) appState.fuelings[idx] = newData; } else { appState.fuelings.push(newData); } await saveData(e.target.querySelector('button[type="submit"]')); document.getElementById('fuelModal').close(); };
-        
+
         document.getElementById('form-reminder').onsubmit = async (e) => { 
             e.preventDefault(); 
             const idVal = document.getElementById('rem-id').value; 
@@ -904,7 +909,7 @@
             }
 
             appState.reminders = appState.reminders.filter(i => i.id !== id);
-            
+
             await saveData(btn);
             document.getElementById('completeTaskModal').close();
             showToast('Задача выполнена и перенесена!');
@@ -922,9 +927,6 @@
             if (myChartLine) myChartLine.destroy();
             myChartLine = new Chart(document.getElementById('chart-line'), { type: 'line', data: { labels: labels, datasets: [{ label: 'Расход (л/100км)', data: fuelData, borderColor: '#f59e0b', tension: 0.3, fill: true, backgroundColor: 'rgba(245, 158, 11, 0.1)' }] }, options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: false } } } });
         }
-
-        window.exportData = () => { const blob = new Blob([JSON.stringify(appState, null, 2)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `autobook_backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); };
-        window.importData = async (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async (ev) => { try { appState = JSON.parse(ev.target.result); await saveData(); showToast('Данные загружены!'); } catch(ex) { showToast('Ошибка файла', 'error'); } }; reader.readAsText(file); };
     </script>
 
 <script>
@@ -945,15 +947,44 @@
   }
 </script>
 <script>
-  function shareApp() {
+  window.shareApp = function() {
+    const shareData = {
+      title: 'Service Book',
+      text: 'Удобная сервисная книжка для учета расходов на авто. Рекомендую!',
+      url: 'https://servicecarbook.ru'
+    };
+
     if (navigator.share) {
-      navigator.share({
-        title: 'Service Book',
-        text: 'Удобная сервисная книжка для учета расходов на авто. Рекомендую!',
-        url: 'https://servicecarbook.ru'
-      }).catch(console.error);
+      navigator.share(shareData).catch((err) => {
+        copyLinkFallback(shareData.url);
+      });
     } else {
-      alert('Скопируйте ссылку для друга: https://servicecarbook.ru');
+      copyLinkFallback(shareData.url);
+    }
+  };
+
+  function copyLinkFallback(url) {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('Ссылка скопирована в буфер обмена!');
+      }).catch(() => {
+        showToast('Не удалось скопировать', 'error');
+      });
+    } else {
+      const textArea = document.createElement("textarea");
+      textArea.value = url;
+      textArea.style.position = "absolute";
+      textArea.style.left = "-999999px";
+      document.body.prepend(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        showToast('Ссылка скопирована в буфер обмена!');
+      } catch (error) {
+        showToast('Не удалось скопировать', 'error');
+      } finally {
+        textArea.remove();
+      }
     }
   }
 </script>
