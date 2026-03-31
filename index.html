@@ -50,7 +50,6 @@
         </div>
     </nav>
 
-
     <div class="max-w-5xl mx-auto px-4 mt-6">
         <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 flex flex-wrap justify-between items-center gap-4 border border-slate-100">
             <div class="flex items-center gap-4">
@@ -241,11 +240,11 @@
                         <option value="">Стандартная иконка авто</option>
                         <option value="audi.com">Audi</option>
                         <option value="bmw.com">BMW</option>
-                        <option value="cheryinternational.com">Chery</option>
+                        <option value="chery.ru">Chery</option>
                         <option value="chevrolet.com">Chevrolet</option>
                         <option value="ford.com">Ford</option>
                         <option value="geely.com">Geely</option>
-                        <option value="haval-global.com">Haval</option>
+                        <option value="haval.ru">Haval</option>
                         <option value="honda.com">Honda</option>
                         <option value="hyundai.com">Hyundai</option>
                         <option value="kia.com">Kia</option>
@@ -643,12 +642,11 @@
             document.getElementById('display-car-details').innerText = `${appState.car.year || ''} ${appState.car.plate ? `| Гос.номер: ${appState.car.plate}` : ''}`;
             document.getElementById('display-mileage').innerText = currentMileage.toLocaleString();
 
-            // ВСТАВКА БЕЗОПАСНОГО ЛОГОТИПА
+            // ВСТАВКА НАДЕЖНОГО ЛОГОТИПА GOOGLE FAVICONS
             const logoContainer = document.getElementById('car-logo-container');
             if (appState.car.brandId) {
-                // Если картинка не загрузится (например, нет интернета), onerror спрячет тег <img> и покажет соседний тег <i>
                 logoContainer.innerHTML = `
-                    <img src="https://logo.clearbit.com/${appState.car.brandId}" class="w-10 h-10 object-contain rounded" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <img src="https://www.google.com/s2/favicons?domain=${appState.car.brandId}&sz=128" class="w-10 h-10 object-contain rounded" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                     <i class="fas fa-car text-blue-600 text-2xl" style="display:none;"></i>
                 `;
                 logoContainer.className = "bg-white p-2 rounded-full shadow-sm w-14 h-14 flex items-center justify-center border border-slate-100 shrink-0 transition-all";
@@ -919,6 +917,17 @@
         window.exportData = () => { const blob = new Blob([JSON.stringify(appState, null, 2)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `autobook_backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); };
         window.importData = async (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async (ev) => { try { appState = JSON.parse(ev.target.result); await saveData(); showToast('Данные загружены!'); } catch(ex) { showToast('Ошибка файла', 'error'); } }; reader.readAsText(file); };
     </script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+      for(let registration of registrations) {
+        registration.update();
+      }
+    });
+  }
+</script>
+
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
