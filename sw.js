@@ -1,4 +1,4 @@
-const CACHE_NAME = 'carbook-nuke-v13';
+const CACHE_NAME = 'carbook-nuke-v14';
 
 self.addEventListener('install', event => {
   self.skipWaiting(); // Принудительно убиваем старый Service Worker
@@ -29,6 +29,12 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // ВОТ ОНО - ИСПРАВЛЕНИЕ: 
+  // Игнорируем все POST-запросы (отправку в Firebase) и системные ссылки браузера
+  if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) {
+    return; 
+  }
+
   event.respondWith(
     fetch(event.request)
       .then(response => {
