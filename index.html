@@ -206,9 +206,12 @@
                 </div>
             </div>
             
-            <div class="flex justify-center mt-2 pb-4">
-                <button onclick="shareApp()" class="flex items-center gap-2 bg-blue-50 text-blue-700 px-6 py-3 rounded-xl font-bold hover:bg-blue-100 transition active:scale-95 border border-blue-100 shadow-sm w-full md:w-auto justify-center">
-                    <i class="fas fa-share-nodes fa-lg"></i> Поделиться приложением
+            <div class="flex flex-col sm:flex-row justify-center gap-3 mt-2 pb-4 px-4 sm:px-0">
+                <button onclick="shareLink('rustore')" class="flex items-center gap-2 bg-blue-50 text-blue-700 px-6 py-3 rounded-xl font-bold hover:bg-blue-100 transition active:scale-95 border border-blue-100 shadow-sm w-full sm:w-auto justify-center">
+                    <i class="fab fa-android fa-lg"></i> Скачать в RuStore
+                </button>
+                <button onclick="shareLink('website')" class="flex items-center gap-2 bg-slate-50 text-slate-700 px-6 py-3 rounded-xl font-bold hover:bg-slate-100 transition active:scale-95 border border-slate-200 shadow-sm w-full sm:w-auto justify-center">
+                    <i class="fas fa-globe fa-lg"></i> Поделиться сайтом
                 </button>
             </div>
         </div>
@@ -947,26 +950,42 @@
   }
 </script>
 <script>
-  window.shareApp = function() {
-    const shareData = {
-      title: 'Service Book',
-      text: 'Удобная сервисная книжка для учета расходов на авто. Рекомендую!',
-      url: 'https://servicecarbook.ru'
-    };
+  // Функция принимает параметр type: 'rustore' или 'website'
+  window.shareLink = function(type) {
+    let shareData = {};
 
+    if (type === 'rustore') {
+      shareData = {
+        title: 'Service Book в RuStore',
+        text: 'Скачай удобное приложение для учета расходов на авто в RuStore!',
+        // ВАЖНО: Замените ссылку ниже на реальную ссылку вашего приложения в RuStore
+        url: 'https://www.rustore.ru/catalog/app/ru.servicecarbook.app' 
+      };
+    } else {
+      shareData = {
+        title: 'Service Book',
+        text: 'Удобная онлайн сервисная книжка для авто. Рекомендую!',
+        url: 'https://servicecarbook.ru'
+      };
+    }
+
+    // Вызываем нативное окно "Поделиться" телефона
     if (navigator.share) {
       navigator.share(shareData).catch((err) => {
+        // Если пользователь отменил шаринг или произошла ошибка
         copyLinkFallback(shareData.url);
       });
     } else {
+      // Если браузер не поддерживает navigator.share (например, на старых ПК)
       copyLinkFallback(shareData.url);
     }
   };
 
+  // Резервное копирование ссылки в буфер обмена
   function copyLinkFallback(url) {
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(url).then(() => {
-        showToast('Ссылка скопирована в буфер обмена!');
+        showToast('Ссылка скопирована!');
       }).catch(() => {
         showToast('Не удалось скопировать', 'error');
       });
@@ -979,7 +998,7 @@
       textArea.select();
       try {
         document.execCommand('copy');
-        showToast('Ссылка скопирована в буфер обмена!');
+        showToast('Ссылка скопирована!');
       } catch (error) {
         showToast('Не удалось скопировать', 'error');
       } finally {
