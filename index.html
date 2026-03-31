@@ -80,20 +80,24 @@
         </div>
 
         <div id="tab-dash" class="tab-content block space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-2 gap-4">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 border-l-4 border-l-blue-500">
-                    <p class="text-xs text-slate-400 uppercase font-bold">Средний расход</p>
-                    <p class="text-2xl font-bold mt-1 text-slate-800" id="dash-avg-fuel">0 <span class="text-sm font-normal text-slate-500">л/100км</span></p>
+                    <p class="text-[10px] sm:text-xs text-slate-400 uppercase font-bold truncate">Средний расход</p>
+                    <p class="text-xl sm:text-2xl font-bold mt-1 text-slate-800" id="dash-avg-fuel">0 <span class="text-xs sm:text-sm font-normal text-slate-500">л/100км</span></p>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 border-l-4 border-l-yellow-500">
-                    <p class="text-xs text-slate-400 uppercase font-bold">Затраты (Всего)</p>
-                    <p class="text-2xl font-bold mt-1 text-slate-800"><span id="dash-total-cost">0</span> ₽</p>
-                    <p class="text-sm font-medium text-slate-500 mt-2 border-t pt-2"><i class="fas fa-calendar-day mr-1"></i> В этом месяце: <span id="dash-month-cost" class="text-yellow-600 font-bold">0</span> ₽</p>
+                    <p class="text-[10px] sm:text-xs text-slate-400 uppercase font-bold truncate">Затраты (Всего)</p>
+                    <p class="text-xl sm:text-2xl font-bold mt-1 text-slate-800"><span id="dash-total-cost">0</span> ₽</p>
+                    <p class="text-[10px] sm:text-xs font-medium text-slate-500 mt-2 border-t pt-2 truncate"><i class="fas fa-calendar-day mr-1"></i> Месяц: <span id="dash-month-cost" class="text-yellow-600 font-bold">0</span> ₽</p>
                 </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 border-l-4 border-l-red-500">
-                    <p class="text-xs text-slate-400 uppercase font-bold">Активные задачи</p>
-                    <p class="text-2xl font-bold mt-1 text-slate-800" id="dash-reminders-count">0</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg text-slate-800"><i class="fas fa-clipboard-check text-purple-500 mr-2"></i>Мои задачи</h3>
+                    <button onclick="document.querySelector('[data-target=\\'tab-reminders\\']').click()" class="text-blue-600 text-sm hover:underline font-medium">Все задачи</button>
                 </div>
+                <div id="dash-tasks-list" class="space-y-3"></div>
             </div>
 
             <div class="grid grid-cols-3 gap-3">
@@ -102,15 +106,7 @@
                 <button onclick="openReminderModal()" class="bg-purple-600 text-white py-3 rounded-xl shadow hover:bg-purple-700 transition font-medium flex flex-col items-center justify-center gap-1 text-xs sm:text-sm"><i class="fas fa-plus-circle fa-lg"></i> Задача</button>
             </div>
 
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 mt-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-lg text-slate-800"><i class="fas fa-clipboard-check text-purple-500 mr-2"></i>Мои задачи</h3>
-                    <button onclick="document.querySelector('[data-target=\\'tab-reminders\\']').click()" class="text-blue-600 text-sm hover:underline font-medium">Все задачи</button>
-                </div>
-                <div id="dash-tasks-list" class="space-y-3"></div>
-            </div>
-
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 mt-6">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
                 <h3 class="font-bold text-lg mb-4 text-slate-800"><i class="fas fa-history text-slate-400 mr-2"></i>Последние записи</h3>
                 <div id="dash-recent-list" class="space-y-3"></div>
             </div>
@@ -574,7 +570,7 @@
         document.getElementById('btn-register-submit').onclick = async () => { const nickname = document.getElementById('auth-name').value.trim(); const email = document.getElementById('auth-email').value; const pass = document.getElementById('auth-pass').value; if(!nickname || !email || !pass) return; const btn = document.getElementById('btn-register-submit'); btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; try { const userCredential = await createUserWithEmailAndPassword(auth, email, pass); await updateProfile(userCredential.user, { displayName: nickname }); document.getElementById('authModal').close(); showToast('Аккаунт создан!'); document.getElementById('user-info').innerHTML = `<i class="fas fa-cloud text-blue-300"></i> <span class="cursor-pointer border-b border-dashed hover:text-blue-200" onclick="renameUser()">${nickname}</span>`; } catch (error) { showToast(error.message, 'error'); } finally { btn.innerText = 'Создать аккаунт'; } };
         document.getElementById('btn-logout').onclick = async () => { if(confirm('Выйти из аккаунта?')) { localStorage.removeItem('autoBookState'); appState = { car: { make: '', year: '', plate: '', mileage: 0 }, services: [], tuning: [], fuelings: [], reminders: [] }; await signOut(auth); showToast('Вы вышли'); } };
 
-        // Функция для рендера одной задачи (используется и в Сводке, и во вкладке Задачи)
+        // Универсальная функция отрисовки задачи
         const renderTaskHtml = (r, currentMileage) => {
             let left = r.mileage ? r.mileage - currentMileage : null;
             let isExpiredDate = r.date ? new Date(r.date) <= new Date().setHours(0,0,0,0) : false;
@@ -583,7 +579,7 @@
 
             return `
             <div class="group p-4 bg-white rounded-xl shadow-sm border-l-4 ${isUrgent ? 'border-l-red-500 bg-red-50/30' : 'border-l-blue-500 border border-slate-100'} flex justify-between items-center hover:shadow-md transition-all">
-                <div class="flex-1">
+                <div class="flex-1 pr-2">
                     <div class="flex items-center gap-2">
                         ${isUrgent ? '<i class="fas fa-exclamation-circle text-red-500 animate-pulse"></i>' : '<i class="fas fa-clipboard-check text-blue-400"></i>'}
                         <p class="font-bold text-slate-800 text-base leading-tight">${r.title}</p>
@@ -595,9 +591,10 @@
                         ${r.category ? `<span class="text-[9px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded uppercase">${r.category === 'service' ? 'ТО' : r.category === 'tuning' ? 'Расход' : 'Заправка'}</span>` : ''}
                     </div>
                 </div>
-                <div class="flex gap-2 ml-3">
-                    <button onclick="openReminderModal(${r.id})" class="text-slate-400 hover:text-blue-600 w-9 h-9 rounded-lg bg-slate-50 flex justify-center items-center transition" title="Изменить"><i class="fas fa-pen text-sm"></i></button>
-                    <button onclick="finishReminder(${r.id})" class="text-emerald-500 hover:text-white hover:bg-emerald-500 w-10 h-10 rounded-xl border-2 border-emerald-100 flex justify-center items-center transition-all shadow-sm" title="Выполнить"><i class="fas fa-check fa-lg"></i></button>
+                <div class="flex items-center gap-1.5 pl-2 border-l border-slate-100">
+                    <button onclick="openReminderModal(${r.id})" class="text-slate-400 hover:text-blue-600 w-8 h-8 rounded-full bg-slate-50 flex justify-center items-center transition" title="Изменить"><i class="fas fa-pen text-sm"></i></button>
+                    <button onclick="deleteItem('reminders', ${r.id})" class="text-red-400 hover:text-red-600 w-8 h-8 rounded-full bg-red-50 flex justify-center items-center transition" title="Удалить задачу"><i class="fas fa-trash text-sm"></i></button>
+                    <button onclick="finishReminder(${r.id})" class="text-emerald-500 hover:text-white hover:bg-emerald-500 w-9 h-9 rounded-xl border border-emerald-200 flex justify-center items-center transition-all shadow-sm ml-1" title="Выполнить"><i class="fas fa-check"></i></button>
                 </div>
             </div>`;
         };
@@ -640,7 +637,7 @@
             document.getElementById('fuel-total-stats').innerHTML = `${totalFuelLiters.toFixed(1)} л <span class="text-slate-300 font-normal mx-1">|</span> ${totalFuelCost.toLocaleString()} ₽`;
             document.getElementById('fuel-month-stats').innerHTML = `${monthFuelLiters.toFixed(1)} л <span class="text-blue-300 font-normal mx-1">|</span> ${monthFuelCost.toLocaleString()} ₽`;
 
-            // Сортировка задач: сначала дата (ближайшие), потом пробег
+            // Сортировка задач
             const sortedRems = [...(appState.reminders || [])].sort((a, b) => {
                 if (a.date && b.date) return new Date(a.date) - new Date(b.date);
                 if (a.date) return -1;
@@ -648,35 +645,24 @@
                 return (a.mileage || 0) - (b.mileage || 0);
             });
 
-            // Подсчет активных задач для виджета
-            let activeRems = sortedRems.filter(r => {
-                let left = r.mileage ? r.mileage - currentMileage : null;
-                let mUrgent = left !== null && left <= 500;
-                let dUrgent = r.date ? new Date(r.date) <= new Date().setHours(0,0,0,0) : false;
-                return mUrgent || dUrgent;
-            });
-            
-            document.getElementById('dash-reminders-count').innerText = activeRems.length;
-            if (activeRems.length > 0) document.getElementById('dash-reminders-count').classList.add('text-red-500'); else document.getElementById('dash-reminders-count').classList.remove('text-red-500');
-
-            // Вывод задач на Главный экран (Сводку) - показываем топ-3
+            // Вывод задач на Главный экран (Сводка)
             const dashTasksContainer = document.getElementById('dash-tasks-list');
             if (sortedRems.length === 0) {
-                dashTasksContainer.innerHTML = '<div class="text-center text-slate-400 py-3 text-sm">Все дела выполнены!</div>';
+                dashTasksContainer.innerHTML = '<div class="text-center text-slate-400 py-3 text-sm">Все задачи выполнены!</div>';
             } else {
+                // Показываем на сводке только 3 ближайшие задачи, чтобы не растягивать экран
                 dashTasksContainer.innerHTML = sortedRems.slice(0, 3).map(r => renderTaskHtml(r, currentMileage)).join('');
             }
 
-            // Вывод всех задач во вкладку "Задачи"
+            // Вывод задач во вкладку "Задачи"
             const remEl = document.getElementById('list-reminders');
             if (sortedRems.length === 0) {
                 remEl.innerHTML = '<div class="p-10 text-center text-slate-400"><i class="fas fa-clipboard-check fa-3x mb-3 opacity-20"></i><br>Список задач пуст</div>';
             } else {
-                // Добавляем классы mx-4 для отступов на странице
                 remEl.innerHTML = sortedRems.map(r => `<div class="mx-4 my-3">${renderTaskHtml(r, currentMileage)}</div>`).join('');
             }
 
-            // Последние записи на сводке
+            // Последние записи
             const recentContainer = document.getElementById('dash-recent-list');
             const allRecords = [
                 ...appState.services.map(s => ({ ...s, _type: 'service', _title: s.type, _icon: 'fa-wrench text-blue-500', _bg: 'bg-blue-50' })),
@@ -891,45 +877,3 @@
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').then(registration => {}).catch(err => {});
-    });
-  }
-</script>
-<script>
-  function shareApp() {
-    if (navigator.share) {
-      navigator.share({
-        title: 'Service Car Book',
-        text: 'Удобная сервисная книжка для учета расходов на авто. Рекомендую!',
-        url: 'https://servicecarbook.ru'
-      }).catch(console.error);
-    } else {
-      alert('Скопируйте ссылку для друга: https://servicecarbook.ru');
-    }
-  }
-</script>
-<script>
-  window.openTelegram = () => {
-    if (navigator.onLine) {
-      window.open('https://t.me/webservicecarbook', '_blank', 'noopener,noreferrer');
-    } else {
-      showToast('Нет подключения к интернету', 'error');
-    }
-  };
-</script>
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').then(reg => {
-    reg.onupdatefound = () => {
-      const installingWorker = reg.installing;
-      installingWorker.onstatechange = () => {
-        if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-          window.location.reload();
-        }
-      };
-    };
-  });
-}
-</script>
-</body>
-</html>
