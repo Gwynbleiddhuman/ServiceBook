@@ -16,7 +16,7 @@
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         .safe-scroll-x { touch-action: pan-x; overscroll-behavior-x: contain; }
-        
+
         /* Скрытие стандартного маркера details/summary в браузерах */
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
@@ -84,8 +84,9 @@
         <div id="tab-dash" class="tab-content block space-y-6">
             <div class="grid grid-cols-2 gap-4">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 border-l-4 border-l-blue-500">
-                    <p class="text-[10px] sm:text-xs text-slate-400 uppercase font-bold truncate">Средний расход</p>
-                    <p class="text-xl sm:text-2xl font-bold mt-1 text-slate-800" id="dash-avg-fuel">0 <span class="text-xs sm:text-sm font-normal text-slate-500">л/100км</span></p>
+                    <p class="text-[10px] sm:text-xs text-slate-400 uppercase font-bold truncate">Затраты в день</p>
+                    <p class="text-xl sm:text-2xl font-bold mt-1 text-slate-800"><span id="dash-cost-per-day">0</span> <span class="text-xs sm:text-sm font-normal text-slate-500">₽</span></p>
+                    <p class="text-[10px] sm:text-xs font-medium text-slate-500 mt-2 border-t pt-2 truncate"><i class="fas fa-calendar-alt mr-1 text-blue-400"></i> Учтено дней: <span id="dash-tracked-days" class="text-blue-600 font-bold">0</span></p>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 border-l-4 border-l-yellow-500">
                     <p class="text-[10px] sm:text-xs text-slate-400 uppercase font-bold truncate">Затраты (Всего)</p>
@@ -122,17 +123,19 @@
 
         <div id="tab-service" class="tab-content hidden">
             <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                <div class="p-4 border-b bg-slate-50 flex flex-col gap-3">
                     <h3 class="font-bold text-lg">История обслуживания</h3>
-                    <div class="flex items-center gap-2">
-                        <select id="sort-service" onchange="updateUI()" class="bg-white border border-slate-200 text-slate-600 text-xs rounded-lg px-2 py-1.5 outline-none focus:border-blue-400 cursor-pointer shadow-sm">
-                            <option value="date-desc">Сначала новые</option>
-                            <option value="date-asc">Сначала старые</option>
-                            <option value="cost-desc">Сначала дорогие</option>
-                            <option value="cost-asc">Сначала дешевые</option>
-                        </select>
-                        <button onclick="openServiceModal()" class="text-blue-600 hover:text-blue-800"><i class="fas fa-plus-circle fa-lg"></i></button>
-                    </div>
+                    <select id="sort-service" onchange="updateUI()" class="bg-white border border-slate-200 text-slate-600 text-sm rounded-lg px-3 py-2 outline-none focus:border-blue-400 cursor-pointer shadow-sm w-full">
+                        <option value="date-desc">Сначала новые</option>
+                        <option value="date-asc">Сначала старые</option>
+                        <option value="cost-desc">Сначала дорогие</option>
+                        <option value="cost-asc">Сначала дешевые</option>
+                    </select>
+                </div>
+                <div class="p-4 border-b bg-white">
+                    <button onclick="openServiceModal()" class="w-full bg-blue-600 text-white py-3 rounded-xl shadow hover:bg-blue-700 transition font-bold flex items-center justify-center gap-2">
+                        <i class="fas fa-plus-circle fa-lg"></i> Добавить запись о ТО
+                    </button>
                 </div>
                 <div id="list-services" class="pb-4"></div>
             </div>
@@ -140,17 +143,19 @@
 
         <div id="tab-tuning" class="tab-content hidden">
             <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                <div class="p-4 border-b bg-slate-50 flex flex-col gap-3">
                     <h3 class="font-bold text-lg">Прочие расходы</h3>
-                    <div class="flex items-center gap-2">
-                        <select id="sort-tuning" onchange="updateUI()" class="bg-white border border-slate-200 text-slate-600 text-xs rounded-lg px-2 py-1.5 outline-none focus:border-purple-400 cursor-pointer shadow-sm">
-                            <option value="date-desc">Сначала новые</option>
-                            <option value="date-asc">Сначала старые</option>
-                            <option value="cost-desc">Сначала дорогие</option>
-                            <option value="cost-asc">Сначала дешевые</option>
-                        </select>
-                        <button onclick="openTuningModal()" class="text-purple-600 hover:text-purple-800"><i class="fas fa-plus-circle fa-lg"></i></button>
-                    </div>
+                    <select id="sort-tuning" onchange="updateUI()" class="bg-white border border-slate-200 text-slate-600 text-sm rounded-lg px-3 py-2 outline-none focus:border-purple-400 cursor-pointer shadow-sm w-full">
+                        <option value="date-desc">Сначала новые</option>
+                        <option value="date-asc">Сначала старые</option>
+                        <option value="cost-desc">Сначала дорогие</option>
+                        <option value="cost-asc">Сначала дешевые</option>
+                    </select>
+                </div>
+                <div class="p-4 border-b bg-white">
+                    <button onclick="openTuningModal()" class="w-full bg-purple-600 text-white py-3 rounded-xl shadow hover:bg-purple-700 transition font-bold flex items-center justify-center gap-2">
+                        <i class="fas fa-plus-circle fa-lg"></i> Добавить расход
+                    </button>
                 </div>
                 <div id="list-tuning" class="pb-4"></div>
             </div>
@@ -158,17 +163,14 @@
 
         <div id="tab-fuel" class="tab-content hidden">
             <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                <div class="p-4 border-b bg-slate-50 flex flex-col gap-3">
                     <h3 class="font-bold text-lg">Журнал заправок</h3>
-                    <div class="flex items-center gap-2">
-                        <select id="sort-fuel" onchange="updateUI()" class="bg-white border border-slate-200 text-slate-600 text-xs rounded-lg px-2 py-1.5 outline-none focus:border-blue-400 cursor-pointer shadow-sm">
-                            <option value="date-desc">Сначала новые</option>
-                            <option value="date-asc">Сначала старые</option>
-                            <option value="cost-desc">Сначала дорогие</option>
-                            <option value="cost-asc">Сначала дешевые</option>
-                        </select>
-                        <button onclick="openFuelModal()" class="text-blue-600 hover:text-blue-800"><i class="fas fa-plus-circle fa-lg"></i></button>
-                    </div>
+                    <select id="sort-fuel" onchange="updateUI()" class="bg-white border border-slate-200 text-slate-600 text-sm rounded-lg px-3 py-2 outline-none focus:border-blue-400 cursor-pointer shadow-sm w-full">
+                        <option value="date-desc">Сначала новые</option>
+                        <option value="date-asc">Сначала старые</option>
+                        <option value="cost-desc">Сначала дорогие</option>
+                        <option value="cost-asc">Сначала дешевые</option>
+                    </select>
                 </div>
                 <div class="p-4 border-b bg-white grid grid-cols-2 gap-4 shadow-inner">
                     <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
@@ -180,15 +182,24 @@
                         <p class="font-bold text-blue-700" id="fuel-month-stats">0 л <span class="text-blue-300 font-normal mx-1">|</span> 0 ₽</p>
                     </div>
                 </div>
+                <div class="p-4 border-b bg-white">
+                    <button onclick="openFuelModal()" class="w-full bg-emerald-600 text-white py-3 rounded-xl shadow hover:bg-emerald-700 transition font-bold flex items-center justify-center gap-2">
+                        <i class="fas fa-plus-circle fa-lg"></i> Добавить заправку
+                    </button>
+                </div>
                 <div id="list-fuelings" class="pb-4"></div>
             </div>
         </div>
 
         <div id="tab-reminders" class="tab-content hidden">
             <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                <div class="p-4 border-b bg-slate-50 flex flex-col gap-3">
                     <h3 class="font-bold text-lg">Список задач</h3>
-                    <button onclick="openReminderModal()" class="text-blue-600 hover:text-blue-800"><i class="fas fa-plus-circle fa-lg"></i></button>
+                </div>
+                <div class="p-4 border-b bg-white">
+                    <button onclick="openReminderModal()" class="w-full bg-purple-600 text-white py-3 rounded-xl shadow hover:bg-purple-700 transition font-bold flex items-center justify-center gap-2">
+                        <i class="fas fa-plus-circle fa-lg"></i> Добавить задачу
+                    </button>
                 </div>
                 <div id="list-reminders" class="pb-4"></div>
             </div>
@@ -201,16 +212,16 @@
                     <canvas id="chart-doughnut" class="w-full max-h-[300px]"></canvas>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
-                    <h3 class="font-bold mb-4 text-center">Динамика расхода (л/100км)</h3>
+                    <h3 class="font-bold mb-4 text-center">Расходы по месяцам (₽)</h3>
                     <canvas id="chart-line" class="w-full max-h-[300px]"></canvas>
                 </div>
             </div>
-            
+
             <div class="flex flex-col sm:flex-row justify-center gap-3 mt-2 pb-4 px-4 sm:px-0">
                 <button onclick="copyAndGoToRuStore()" class="flex items-center gap-2 bg-blue-50 text-blue-700 px-6 py-3 rounded-xl font-bold hover:bg-blue-100 transition active:scale-95 border border-blue-100 shadow-sm w-full sm:w-auto justify-center">
-    <i class="fab fa-android fa-lg"></i> Скачать в RuStore
-</button>
-                
+                    <i class="fab fa-android fa-lg"></i> Скачать в RuStore
+                </button>
+
                 <button onclick="shareWebsite()" class="flex items-center gap-2 bg-slate-50 text-slate-700 px-6 py-3 rounded-xl font-bold hover:bg-slate-100 transition active:scale-95 border border-slate-200 shadow-sm w-full sm:w-auto justify-center">
                     <i class="fas fa-share-nodes fa-lg"></i> Поделиться сайтом
                 </button>
@@ -687,12 +698,27 @@
             document.getElementById('dash-total-cost').innerText = totalCost.toLocaleString();
             document.getElementById('dash-month-cost').innerText = monthCost.toLocaleString();
 
-            let fullTanks = appState.fuelings.filter(f => f.isFull).sort((a,b) => new Date(a.date) - new Date(b.date));
-            if (fullTanks.length > 1) {
-                let dist = fullTanks[fullTanks.length - 1].mileage - fullTanks[0].mileage;
-                let liters = fullTanks.slice(1).reduce((acc, f) => acc + Number(f.liters), 0);
-                document.getElementById('dash-avg-fuel').innerHTML = dist > 0 ? `${((liters / dist) * 100).toFixed(1)} <span class="text-sm font-normal text-slate-500">л/100км</span>` : `0 <span class="text-sm font-normal text-slate-500">л/100км</span>`;
-            } else { document.getElementById('dash-avg-fuel').innerHTML = `0 <span class="text-sm font-normal text-slate-500">л/100км</span>`; }
+            // Высчитываем затраты в день
+            let allDates = [
+                ...appState.services.map(s => s.date),
+                ...appState.fuelings.map(f => f.date),
+                ...appState.tuning.map(t => t.date)
+            ].filter(d => d).map(d => new Date(d).getTime());
+
+            let trackedDays = 1;
+            if (allDates.length > 0) {
+                let minDate = Math.min(...allDates);
+                let diffTime = Date.now() - minDate;
+                let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                trackedDays = diffDays > 0 ? diffDays : 1;
+            }
+
+            let costPerDay = (totalCost / trackedDays).toFixed(0);
+            
+            if (document.getElementById('dash-cost-per-day')) {
+                document.getElementById('dash-cost-per-day').innerText = Number(costPerDay).toLocaleString();
+                document.getElementById('dash-tracked-days').innerText = trackedDays.toLocaleString();
+            }
 
             let totalFuelCost = appState.fuelings.reduce((acc, f) => acc + Number(f.cost), 0);
             let totalFuelLiters = appState.fuelings.reduce((acc, f) => acc + Number(f.liters), 0);
@@ -926,10 +952,46 @@
             const sumSrv = appState.services.reduce((a, b) => a + Number(b.cost), 0); const sumFl = appState.fuelings.reduce((a, b) => a + Number(b.cost), 0); const sumTn = appState.tuning.reduce((a, b) => a + Number(b.cost), 0);
             if (myChartDoughnut) myChartDoughnut.destroy();
             myChartDoughnut = new Chart(document.getElementById('chart-doughnut'), { type: 'doughnut', data: { labels: ['Ремонт/ТО', 'Топливо', 'Доработки'], datasets: [{ data: [sumSrv, sumFl, sumTn], backgroundColor: ['#3b82f6', '#10b981', '#8b5cf6'], borderWidth: 0 }] }, options: { plugins: { legend: { position: 'bottom' } } } });
-            let fuelData = []; let labels = []; let fullTanks = appState.fuelings.filter(f => f.isFull).sort((a,b) => new Date(a.date) - new Date(b.date));
-            for(let i = 1; i < fullTanks.length; i++) { let dist = fullTanks[i].mileage - fullTanks[i-1].mileage; if(dist > 0) { labels.push(formatDate(fullTanks[i].date)); fuelData.push(((fullTanks[i].liters / dist) * 100).toFixed(1)); } }
+            
+            // График расходов по месяцам
+            let monthlyCosts = {};
+            const allItems = [...appState.services, ...appState.fuelings, ...appState.tuning].filter(i => i.date);
+            
+            allItems.forEach(item => {
+                const d = new Date(item.date);
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                if(!monthlyCosts[key]) monthlyCosts[key] = 0;
+                monthlyCosts[key] += Number(item.cost);
+            });
+
+            const sortedMonths = Object.keys(monthlyCosts).sort();
+            let chartLabels = [];
+            let chartData = [];
+
+            sortedMonths.forEach(key => {
+                const [year, month] = key.split('-');
+                const dateObj = new Date(year, month - 1);
+                chartLabels.push(dateObj.toLocaleString('ru-RU', { month: 'short', year: '2-digit' }));
+                chartData.push(monthlyCosts[key]);
+            });
+
             if (myChartLine) myChartLine.destroy();
-            myChartLine = new Chart(document.getElementById('chart-line'), { type: 'line', data: { labels: labels, datasets: [{ label: 'Расход (л/100км)', data: fuelData, borderColor: '#f59e0b', tension: 0.3, fill: true, backgroundColor: 'rgba(245, 158, 11, 0.1)' }] }, options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: false } } } });
+            myChartLine = new Chart(document.getElementById('chart-line'), { 
+                type: 'bar',
+                data: { 
+                    labels: chartLabels, 
+                    datasets: [{ 
+                        label: 'Сумма (₽)', 
+                        data: chartData, 
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)', 
+                        borderRadius: 4
+                    }] 
+                }, 
+                options: { 
+                    plugins: { legend: { display: false } }, 
+                    scales: { y: { beginAtZero: true } } 
+                } 
+            });
         }
     </script>
 
@@ -954,7 +1016,7 @@
     window.copyAndGoToRuStore = function() {
     // ВАЖНО: Вставьте сюда реальную ссылку на ваше приложение!
     const url = 'https://www.rustore.ru/catalog/app/ru.servicecarbook.app'; 
-    
+
     // Функция для перехода после копирования
     const redirect = () => {
         setTimeout(() => {
@@ -990,7 +1052,7 @@
         }
     }
 };
-    
+
   window.shareWebsite = function() {
     const shareData = {
       title: 'Service Book',
@@ -1048,14 +1110,4 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(reg => {
     reg.onupdatefound = () => {
       const installingWorker = reg.installing;
-      installingWorker.onstatechange = () => {
-        if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-          window.location.reload();
-        }
-      };
-    };
-  });
-}
-</script>
-</body>
-</html>
+      installingWorker.onstate
