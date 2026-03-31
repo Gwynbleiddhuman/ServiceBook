@@ -41,8 +41,13 @@
 
     <nav class="bg-blue-600 text-white shadow-md sticky top-0 z-40">
         <div class="max-w-5xl mx-auto px-2 sm:px-4 py-3 flex justify-between items-center gap-2">
-            <div class="flex items-center gap-1.5 sm:gap-2 text-base sm:text-xl font-bold truncate">
-                <i class="fas fa-car-side"></i> <span>Service Book</span>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button onclick="document.querySelector('.tab-btn[data-target=\'tab-dash\']').click()" class="bg-white/20 hover:bg-white/30 text-white w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex justify-center items-center transition shadow-sm backdrop-blur-sm" title="На главную">
+                    <i class="fas fa-home"></i>
+                </button>
+                <div class="flex items-center gap-1.5 sm:gap-2 text-base sm:text-xl font-bold truncate">
+                    <i class="fas fa-car-side"></i> <span>Service Book</span>
+                </div>
             </div>
             <div class="flex items-center gap-2 sm:gap-4">
                 <span id="user-info" class="text-xs sm:text-sm font-medium flex items-center gap-1">
@@ -109,8 +114,9 @@
                 </details>
             </div>
 
-            <div class="grid grid-cols-3 gap-3">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <button onclick="openServiceModal()" class="bg-blue-600 text-white py-3 rounded-xl shadow hover:bg-blue-700 transition font-medium flex flex-col items-center justify-center gap-1 text-xs sm:text-sm"><i class="fas fa-wrench fa-lg"></i> Запись ТО</button>
+                <button onclick="openTuningModal()" class="bg-indigo-500 text-white py-3 rounded-xl shadow hover:bg-indigo-600 transition font-medium flex flex-col items-center justify-center gap-1 text-xs sm:text-sm"><i class="fas fa-tools fa-lg"></i> Расход</button>
                 <button onclick="openFuelModal()" class="bg-emerald-600 text-white py-3 rounded-xl shadow hover:bg-emerald-700 transition font-medium flex flex-col items-center justify-center gap-1 text-xs sm:text-sm"><i class="fas fa-gas-pump fa-lg"></i> Заправка</button>
                 <button onclick="openReminderModal()" class="bg-purple-600 text-white py-3 rounded-xl shadow hover:bg-purple-700 transition font-medium flex flex-col items-center justify-center gap-1 text-xs sm:text-sm"><i class="fas fa-plus-circle fa-lg"></i> Задача</button>
             </div>
@@ -153,7 +159,7 @@
                     </select>
                 </div>
                 <div class="p-4 border-b bg-white">
-                    <button onclick="openTuningModal()" class="w-full bg-purple-600 text-white py-3 rounded-xl shadow hover:bg-purple-700 transition font-bold flex items-center justify-center gap-2">
+                    <button onclick="openTuningModal()" class="w-full bg-indigo-500 text-white py-3 rounded-xl shadow hover:bg-indigo-600 transition font-bold flex items-center justify-center gap-2">
                         <i class="fas fa-plus-circle fa-lg"></i> Добавить расход
                     </button>
                 </div>
@@ -268,31 +274,64 @@
                     <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Эмблема марки</label>
                     <select id="car-brand" class="w-full border p-2 rounded bg-slate-50 outline-none focus:border-blue-500">
                         <option value="">Стандартная иконка авто</option>
+                        <option value="acura.com">Acura</option>
+                        <option value="alfaromeo.com">Alfa Romeo</option>
                         <option value="audi.com">Audi</option>
+                        <option value="bentleymotors.com">Bentley</option>
                         <option value="bmw.com">BMW</option>
+                        <option value="cadillac.com">Cadillac</option>
+                        <option value="changanauto.com">Changan</option>
                         <option value="chery.ru">Chery</option>
                         <option value="chevrolet.com">Chevrolet</option>
+                        <option value="chrysler.com">Chrysler</option>
+                        <option value="citroen.com">Citroen</option>
+                        <option value="dacia.com">Dacia</option>
+                        <option value="dodge.com">Dodge</option>
+                        <option value="dongfeng-global.com">Dongfeng</option>
+                        <option value="exeedcars.com">Exeed</option>
+                        <option value="faw.com">FAW</option>
+                        <option value="fiat.com">Fiat</option>
                         <option value="ford.com">Ford</option>
                         <option value="geely.com">Geely</option>
+                        <option value="genesis.com">Genesis</option>
+                        <option value="gwm-global.com">Great Wall</option>
                         <option value="haval.ru">Haval</option>
                         <option value="honda.com">Honda</option>
                         <option value="hyundai.com">Hyundai</option>
+                        <option value="infiniti.com">Infiniti</option>
+                        <option value="jacen.jac.com.cn">JAC</option>
+                        <option value="jaguar.com">Jaguar</option>
+                        <option value="jeep.com">Jeep</option>
                         <option value="kia.com">Kia</option>
                         <option value="lada.ru">Lada (ВАЗ)</option>
+                        <option value="landrover.com">Land Rover</option>
                         <option value="lexus.com">Lexus</option>
+                        <option value="lincoln.com">Lincoln</option>
+                        <option value="maserati.com">Maserati</option>
                         <option value="mazda.com">Mazda</option>
                         <option value="mercedes-benz.com">Mercedes-Benz</option>
+                        <option value="miniusa.com">MINI</option>
                         <option value="mitsubishicars.com">Mitsubishi</option>
+                        <option value="moskvich-auto.ru">Москвич</option>
                         <option value="nissanusa.com">Nissan</option>
+                        <option value="omoda.com">Omoda</option>
                         <option value="opel.com">Opel</option>
                         <option value="peugeot.com">Peugeot</option>
+                        <option value="porsche.com">Porsche</option>
                         <option value="renault.com">Renault</option>
+                        <option value="seat.com">SEAT</option>
                         <option value="skoda-auto.com">Skoda</option>
+                        <option value="smart.com">Smart</option>
                         <option value="subaru.com">Subaru</option>
                         <option value="globalsuzuki.com">Suzuki</option>
+                        <option value="tanksuv.com">Tank</option>
+                        <option value="tesla.com">Tesla</option>
                         <option value="toyota.com">Toyota</option>
+                        <option value="uaz.ru">UAZ (УАЗ)</option>
                         <option value="vw.com">Volkswagen</option>
                         <option value="volvocars.com">Volvo</option>
+                        <option value="voyah.com">Voyah</option>
+                        <option value="zeekrlife.com">Zeekr</option>
                     </select>
                 </div>
 
