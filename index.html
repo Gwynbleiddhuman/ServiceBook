@@ -62,8 +62,8 @@
     <div class="max-w-5xl mx-auto px-4 mt-6">
         <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 flex flex-wrap justify-between items-center gap-4 border border-slate-100">
             <div class="flex items-center gap-4">
-                <div id="car-logo-container" class="bg-blue-100 p-4 rounded-full text-blue-600 flex items-center justify-center w-14 h-14 shrink-0 transition-all">
-                    <i class="fas fa-car text-2xl"></i>
+                <div id="car-logo-container" class="bg-white p-2 rounded-full shadow-inner flex items-center justify-center w-16 h-16 shrink-0 border border-slate-50 transition-all overflow-hidden">
+                    <i class="fas fa-car text-slate-300 text-3xl"></i>
                 </div>
                 <div>
                     <h2 class="text-2xl font-bold" id="display-car-name">Мой Автомобиль</h2>
@@ -713,14 +713,16 @@
 
             const logoContainer = document.getElementById('car-logo-container');
             if (appState.car.brandId) {
+                const logoUrl = `https://logo.clearbit.com/${appState.car.brandId}`;
                 logoContainer.innerHTML = `
-                    <img src="https://www.google.com/s2/favicons?domain=${appState.car.brandId}&sz=128" class="w-10 h-10 object-contain rounded" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                    <i class="fas fa-car text-blue-600 text-2xl" style="display:none;"></i>
+                    <img src="${logoUrl}" class="w-12 h-12 object-contain" 
+                         onerror="this.src='https://www.google.com/s2/favicons?domain=${appState.car.brandId}&sz=128'; this.onerror=function(){this.style.display='none'; this.nextElementSibling.style.display='block';};">
+                    <i class="fas fa-car text-slate-300 text-2xl" style="display:none;"></i>
                 `;
-                logoContainer.className = "bg-white p-2 rounded-full shadow-sm w-14 h-14 flex items-center justify-center border border-slate-100 shrink-0 transition-all";
+                logoContainer.className = "bg-white p-2 rounded-full shadow-inner flex items-center justify-center w-16 h-16 shrink-0 border border-slate-50 transition-all overflow-hidden";
             } else {
-                logoContainer.innerHTML = '<i class="fas fa-car text-2xl"></i>';
-                logoContainer.className = "bg-blue-100 p-4 rounded-full text-blue-600 flex items-center justify-center w-14 h-14 shrink-0 transition-all";
+                logoContainer.innerHTML = '<i class="fas fa-car text-slate-300 text-3xl"></i>';
+                logoContainer.className = "bg-white p-2 rounded-full shadow-inner flex items-center justify-center w-16 h-16 shrink-0 border border-slate-50 transition-all overflow-hidden";
             }
 
             const now = new Date();
@@ -753,7 +755,7 @@
             }
 
             let costPerDay = (totalCost / trackedDays).toFixed(0);
-            
+
             if (document.getElementById('dash-cost-per-day')) {
                 document.getElementById('dash-cost-per-day').innerText = Number(costPerDay).toLocaleString();
                 document.getElementById('dash-tracked-days').innerText = trackedDays.toLocaleString();
@@ -991,11 +993,11 @@
             const sumSrv = appState.services.reduce((a, b) => a + Number(b.cost), 0); const sumFl = appState.fuelings.reduce((a, b) => a + Number(b.cost), 0); const sumTn = appState.tuning.reduce((a, b) => a + Number(b.cost), 0);
             if (myChartDoughnut) myChartDoughnut.destroy();
             myChartDoughnut = new Chart(document.getElementById('chart-doughnut'), { type: 'doughnut', data: { labels: ['Ремонт/ТО', 'Топливо', 'Доработки'], datasets: [{ data: [sumSrv, sumFl, sumTn], backgroundColor: ['#3b82f6', '#10b981', '#8b5cf6'], borderWidth: 0 }] }, options: { plugins: { legend: { position: 'bottom' } } } });
-            
+
             // График расходов по месяцам
             let monthlyCosts = {};
             const allItems = [...appState.services, ...appState.fuelings, ...appState.tuning].filter(i => i.date);
-            
+
             allItems.forEach(item => {
                 const d = new Date(item.date);
                 const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
