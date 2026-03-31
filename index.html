@@ -13,11 +13,8 @@
         dialog::backdrop { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
         dialog[open] { animation: slideIn 0.3s ease-out; }
         @keyframes slideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        /* Прячем скроллбар для красоты, но оставляем скролл */
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* ЗАПРЕТ СЛУЧАЙНОГО СВАЙПА ВНИЗ ПРИ ГОРИЗОНТАЛЬНОМ СКРОЛЛЕ В ДОП.МЕНЮ */
         .safe-scroll-x { touch-action: pan-x; overscroll-behavior-x: contain; }
     </style>
     <link rel="manifest" href="manifest.json">
@@ -57,7 +54,9 @@
     <div class="max-w-5xl mx-auto px-4 mt-6">
         <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 flex flex-wrap justify-between items-center gap-4 border border-slate-100">
             <div class="flex items-center gap-4">
-                <div class="bg-blue-100 p-4 rounded-full text-blue-600 text-2xl"><i class="fas fa-car"></i></div>
+                <div id="car-logo-container" class="bg-blue-100 p-4 rounded-full text-blue-600 flex items-center justify-center w-14 h-14 shrink-0 transition-all">
+                    <i class="fas fa-car text-2xl"></i>
+                </div>
                 <div>
                     <h2 class="text-2xl font-bold" id="display-car-name">Мой Автомобиль</h2>
                     <p class="text-slate-500 text-sm" id="display-car-details">Данные не заполнены</p>
@@ -234,7 +233,40 @@
         <div class="p-6">
             <h3 class="text-xl font-bold mb-4">Данные авто</h3>
             <form id="form-car" class="space-y-3">
-                <input type="text" id="car-make" placeholder="Марка и модель (напр. Kia Rio)" class="w-full border p-2 rounded bg-slate-50" required>
+                <input type="text" id="car-make" placeholder="Модель (напр. Rio)" class="w-full border p-2 rounded bg-slate-50" required>
+                
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Эмблема марки</label>
+                    <select id="car-brand" class="w-full border p-2 rounded bg-slate-50 outline-none focus:border-blue-500">
+                        <option value="">Стандартная иконка авто</option>
+                        <option value="audi">Audi</option>
+                        <option value="bmw">BMW</option>
+                        <option value="chery">Chery</option>
+                        <option value="chevrolet">Chevrolet</option>
+                        <option value="ford">Ford</option>
+                        <option value="geely">Geely</option>
+                        <option value="haval">Haval</option>
+                        <option value="honda">Honda</option>
+                        <option value="hyundai">Hyundai</option>
+                        <option value="kia">Kia</option>
+                        <option value="lada">Lada (ВАЗ)</option>
+                        <option value="lexus">Lexus</option>
+                        <option value="mazda">Mazda</option>
+                        <option value="mercedes">Mercedes-Benz</option>
+                        <option value="mitsubishi">Mitsubishi</option>
+                        <option value="nissan">Nissan</option>
+                        <option value="opel">Opel</option>
+                        <option value="peugeot">Peugeot</option>
+                        <option value="renault">Renault</option>
+                        <option value="skoda">Skoda</option>
+                        <option value="subaru">Subaru</option>
+                        <option value="suzuki">Suzuki</option>
+                        <option value="toyota">Toyota</option>
+                        <option value="volkswagen">Volkswagen</option>
+                        <option value="volvo">Volvo</option>
+                    </select>
+                </div>
+
                 <div class="grid grid-cols-2 gap-3">
                     <input type="number" id="car-year" placeholder="Год выпуска" class="w-full border p-2 rounded bg-slate-50">
                     <input type="text" id="car-plate" placeholder="Гос. номер" class="w-full border p-2 rounded bg-slate-50">
@@ -378,7 +410,7 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        let appState = { car: { make: '', year: '', plate: '', mileage: 0 }, services: [], tuning: [], fuelings: [], reminders: [] };
+        let appState = { car: { make: '', year: '', plate: '', mileage: 0, brandId: '' }, services: [], tuning: [], fuelings: [], reminders: [] };
         let currentUser = null;
         let myChartDoughnut = null;
         let myChartLine = null;
@@ -423,6 +455,7 @@
 
         window.openCarModal = () => { 
             document.getElementById('car-make').value = appState.car.make || ''; 
+            document.getElementById('car-brand').value = appState.car.brandId || ''; 
             document.getElementById('car-year').value = appState.car.year || ''; 
             document.getElementById('car-plate').value = appState.car.plate || ''; 
             let cm = getCurrentMileage(); 
@@ -545,7 +578,11 @@
         async function loadData() {
             const local = localStorage.getItem('autoBookState');
             if (local) appState = JSON.parse(local);
-            else appState = { car: { make: '', year: '', plate: '', mileage: 0 }, services: [], tuning: [], fuelings: [], reminders: [] };
+            else appState = { car: { make: '', year: '', plate: '', mileage: 0, brandId: '' }, services: [], tuning: [], fuelings: [], reminders: [] };
+            
+            if (!appState.car) appState.car = { make: '', year: '', plate: '', mileage: 0, brandId: '' };
+            if (!appState.car.brandId) appState.car.brandId = '';
+
             if (currentUser) {
                 try { const docSnap = await getDoc(doc(db, "userData", currentUser.uid)); if (docSnap.exists()) { appState = docSnap.data(); localStorage.setItem('autoBookState', JSON.stringify(appState)); } } 
                 catch (e) { showToast('Показаны локальные данные', 'warning'); }
@@ -568,9 +605,8 @@
 
         document.getElementById('btn-login-submit').onclick = async () => { const email = document.getElementById('auth-email').value; const pass = document.getElementById('auth-pass').value; if(!email || !pass) return; const btn = document.getElementById('btn-login-submit'); btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; try { await signInWithEmailAndPassword(auth, email, pass); document.getElementById('authModal').close(); showToast('Успешный вход!'); } catch (error) { showToast(error.message, 'error'); } finally { btn.innerText = 'Войти'; } };
         document.getElementById('btn-register-submit').onclick = async () => { const nickname = document.getElementById('auth-name').value.trim(); const email = document.getElementById('auth-email').value; const pass = document.getElementById('auth-pass').value; if(!nickname || !email || !pass) return; const btn = document.getElementById('btn-register-submit'); btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; try { const userCredential = await createUserWithEmailAndPassword(auth, email, pass); await updateProfile(userCredential.user, { displayName: nickname }); document.getElementById('authModal').close(); showToast('Аккаунт создан!'); document.getElementById('user-info').innerHTML = `<i class="fas fa-cloud text-blue-300"></i> <span class="cursor-pointer border-b border-dashed hover:text-blue-200" onclick="renameUser()">${nickname}</span>`; } catch (error) { showToast(error.message, 'error'); } finally { btn.innerText = 'Создать аккаунт'; } };
-        document.getElementById('btn-logout').onclick = async () => { if(confirm('Выйти из аккаунта?')) { localStorage.removeItem('autoBookState'); appState = { car: { make: '', year: '', plate: '', mileage: 0 }, services: [], tuning: [], fuelings: [], reminders: [] }; await signOut(auth); showToast('Вы вышли'); } };
+        document.getElementById('btn-logout').onclick = async () => { if(confirm('Выйти из аккаунта?')) { localStorage.removeItem('autoBookState'); appState = { car: { make: '', year: '', plate: '', mileage: 0, brandId: '' }, services: [], tuning: [], fuelings: [], reminders: [] }; await signOut(auth); showToast('Вы вышли'); } };
 
-        // Универсальная функция отрисовки задачи
         const renderTaskHtml = (r, currentMileage) => {
             let left = r.mileage ? r.mileage - currentMileage : null;
             let isExpiredDate = r.date ? new Date(r.date) <= new Date().setHours(0,0,0,0) : false;
@@ -607,6 +643,18 @@
             document.getElementById('display-car-details').innerText = `${appState.car.year || ''} ${appState.car.plate ? `| Гос.номер: ${appState.car.plate}` : ''}`;
             document.getElementById('display-mileage').innerText = currentMileage.toLocaleString();
 
+            // Обновляем логотип авто
+            const logoContainer = document.getElementById('car-logo-container');
+            if (appState.car.brandId) {
+                // Если марка выбрана, грузим логотип с бесплатного CDN
+                logoContainer.innerHTML = `<img src="https://cdn.jsdelivr.net/gh/filippella/Car-Logos-Dataset@master/logos/thumb/${appState.car.brandId}.png" class="w-10 h-10 object-contain" onerror="this.outerHTML='<i class=\\'fas fa-car text-blue-600 text-2xl\\'></i>'">`;
+                logoContainer.className = "bg-white p-2 rounded-full shadow-sm w-14 h-14 flex items-center justify-center border border-slate-100 shrink-0 transition-all";
+            } else {
+                // Если марки нет, показываем синюю иконку
+                logoContainer.innerHTML = '<i class="fas fa-car text-2xl"></i>';
+                logoContainer.className = "bg-blue-100 p-4 rounded-full text-blue-600 flex items-center justify-center w-14 h-14 shrink-0 transition-all";
+            }
+
             const now = new Date();
             const currentMonth = now.getMonth();
             const currentYear = now.getFullYear();
@@ -637,7 +685,6 @@
             document.getElementById('fuel-total-stats').innerHTML = `${totalFuelLiters.toFixed(1)} л <span class="text-slate-300 font-normal mx-1">|</span> ${totalFuelCost.toLocaleString()} ₽`;
             document.getElementById('fuel-month-stats').innerHTML = `${monthFuelLiters.toFixed(1)} л <span class="text-blue-300 font-normal mx-1">|</span> ${monthFuelCost.toLocaleString()} ₽`;
 
-            // Сортировка задач
             const sortedRems = [...(appState.reminders || [])].sort((a, b) => {
                 if (a.date && b.date) return new Date(a.date) - new Date(b.date);
                 if (a.date) return -1;
@@ -645,16 +692,13 @@
                 return (a.mileage || 0) - (b.mileage || 0);
             });
 
-            // Вывод задач на Главный экран (Сводка)
             const dashTasksContainer = document.getElementById('dash-tasks-list');
             if (sortedRems.length === 0) {
                 dashTasksContainer.innerHTML = '<div class="text-center text-slate-400 py-3 text-sm">Все задачи выполнены!</div>';
             } else {
-                // Показываем на сводке только 3 ближайшие задачи, чтобы не растягивать экран
                 dashTasksContainer.innerHTML = sortedRems.slice(0, 3).map(r => renderTaskHtml(r, currentMileage)).join('');
             }
 
-            // Вывод задач во вкладку "Задачи"
             const remEl = document.getElementById('list-reminders');
             if (sortedRems.length === 0) {
                 remEl.innerHTML = '<div class="p-10 text-center text-slate-400"><i class="fas fa-clipboard-check fa-3x mb-3 opacity-20"></i><br>Список задач пуст</div>';
@@ -662,7 +706,6 @@
                 remEl.innerHTML = sortedRems.map(r => `<div class="mx-4 my-3">${renderTaskHtml(r, currentMileage)}</div>`).join('');
             }
 
-            // Последние записи
             const recentContainer = document.getElementById('dash-recent-list');
             const allRecords = [
                 ...appState.services.map(s => ({ ...s, _type: 'service', _title: s.type, _icon: 'fa-wrench text-blue-500', _bg: 'bg-blue-50' })),
@@ -793,7 +836,7 @@
 
         window.deleteItem = async (collection, id) => { if(confirm('Удалить запись?')) { appState[collection] = appState[collection].filter(i => i.id !== id); await saveData(); } };
 
-        document.getElementById('form-car').onsubmit = async (e) => { e.preventDefault(); appState.car = { make: document.getElementById('car-make').value, year: document.getElementById('car-year').value, plate: document.getElementById('car-plate').value, mileage: Number(document.getElementById('car-mileage').value) }; await saveData(e.target.querySelector('button[type="submit"]')); document.getElementById('carModal').close(); };
+        document.getElementById('form-car').onsubmit = async (e) => { e.preventDefault(); appState.car = { make: document.getElementById('car-make').value, year: document.getElementById('car-year').value, plate: document.getElementById('car-plate').value, mileage: Number(document.getElementById('car-mileage').value), brandId: document.getElementById('car-brand').value }; await saveData(e.target.querySelector('button[type="submit"]')); document.getElementById('carModal').close(); };
         document.getElementById('form-service').onsubmit = async (e) => { e.preventDefault(); const idVal = document.getElementById('srv-id').value; const m = Number(document.getElementById('srv-mileage').value); const newData = { id: idVal ? Number(idVal) : Date.now(), date: document.getElementById('srv-date').value, type: document.getElementById('srv-type').value, mileage: m, cost: Number(document.getElementById('srv-cost').value) }; if (idVal) { const idx = appState.services.findIndex(x => x.id === Number(idVal)); if(idx !== -1) appState.services[idx] = newData; } else { appState.services.push(newData); } await saveData(e.target.querySelector('button[type="submit"]')); document.getElementById('serviceModal').close(); };
         document.getElementById('form-tuning').onsubmit = async (e) => { e.preventDefault(); const idVal = document.getElementById('tn-id').value; const newData = { id: idVal ? Number(idVal) : Date.now(), date: document.getElementById('tn-date').value, title: document.getElementById('tn-title').value, cost: Number(document.getElementById('tn-cost').value), notes: document.getElementById('tn-notes').value }; if (idVal) { const idx = appState.tuning.findIndex(x => x.id === Number(idVal)); if(idx !== -1) appState.tuning[idx] = newData; } else { appState.tuning.push(newData); } await saveData(e.target.querySelector('button[type="submit"]')); document.getElementById('tuningModal').close(); };
         document.getElementById('form-fuel').onsubmit = async (e) => { e.preventDefault(); const idVal = document.getElementById('fl-id').value; const m = Number(document.getElementById('fl-mileage').value); const newData = { id: idVal ? Number(idVal) : Date.now(), date: document.getElementById('fl-date').value, mileage: m, liters: Number(document.getElementById('fl-liters').value), cost: Number(document.getElementById('fl-cost').value), isFull: document.getElementById('fl-full').checked }; if (idVal) { const idx = appState.fuelings.findIndex(x => x.id === Number(idVal)); if(idx !== -1) appState.fuelings[idx] = newData; } else { appState.fuelings.push(newData); } await saveData(e.target.querySelector('button[type="submit"]')); document.getElementById('fuelModal').close(); };
@@ -877,3 +920,13 @@
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').then(registration => {}).catch(err => {});
+    });
+  }
+</script>
+<script>
+  function shareApp() {
+    if (navigator.share) {
+      navigator.share({
+        title: 'Service Book',
+        text: 'Удоб
