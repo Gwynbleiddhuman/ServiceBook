@@ -715,12 +715,11 @@
             if (appState.car.brandId) {
                 const domain = appState.car.brandId;
 
-// Измененная цепочка без Clearbit (из-за блокировок adblock'ами и ограничений API)
 const srcGoogle = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 const srcYandex = `https://favicon.yandex.net/favicon/v2/https://${domain}?size=120`;
 const srcIconHorse = `https://icon.horse/icon/${domain}`;
 
-logoContainer.innerHTML = 
+logoContainer.innerHTML = `
     <img src="${srcGoogle}"
          class="w-12 h-12 object-contain transition-opacity duration-300" 
          data-step="1"
@@ -729,8 +728,8 @@ logoContainer.innerHTML =
             else if(this.dataset.step == '2') { this.dataset.step = '3'; this.src = '${srcIconHorse}'; }
             else { this.style.display = 'none'; this.nextElementSibling.style.display = 'block'; }
          ">
-    <i class="fas fa-car text-slate-300 text-2xl" style="display:none;"></i>`
-;
+    <i class="fas fa-car text-slate-300 text-2xl" style="display:none;"></i>
+`;
                 logoContainer.className = "bg-white p-2 rounded-full shadow-inner flex items-center justify-center w-16 h-16 shrink-0 border border-slate-50 transition-all overflow-hidden";
             } else {
 
