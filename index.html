@@ -115,10 +115,10 @@
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <button onclick="openServiceModal()" class="bg-blue-600 text-white py-5 rounded-xl shadow hover:bg-blue-700 transition font-medium flex flex-col items-center justify-center gap-1 text-xs sm:text-xs"><i class="fas fa-wrench fa-lg"> Запись ТО</i></button>
-                <button onclick="openTuningModal()" class="bg-indigo-500 text-white py-5 rounded-xl shadow hover:bg-indigo-600 transition font-medium flex flex-col items-center justify-center gap-1 text-xs sm:text-xs"><i class="fas fa-tools fa-lg"> Расход</i></button>
-                <button onclick="openFuelModal()" class="bg-emerald-600 text-white py-5 rounded-xl shadow hover:bg-emerald-700 transition font-medium flex flex-col items-center justify-center gap-1 text-xs sm:text-xs"><i class="fas fa-gas-pump fa-lg"> Заправка</i></button>
-                <button onclick="openReminderModal()" class="bg-purple-600 text-white py-5 rounded-xl shadow hover:bg-purple-700 transition font-medium flex flex-col items-center justify-center gap-1 text-xs sm:text-xs"><i class="fas fa-plus-circle fa-lg"> Задача</i></button>
+                <button onclick="openServiceModal()" class="bg-blue-600 text-white py-3 rounded-xl shadow hover:bg-blue-700 transition font-medium flex flex-col items-center justify-center gap-1 text-xs sm:text-sm"><i class="fas fa-wrench fa-lg"></i> Запись ТО</button>
+                <button onclick="openTuningModal()" class="bg-indigo-500 text-white py-3 rounded-xl shadow hover:bg-indigo-600 transition font-medium flex flex-col items-center justify-center gap-1 text-xs sm:text-sm"><i class="fas fa-tools fa-lg"></i> Расход</button>
+                <button onclick="openFuelModal()" class="bg-emerald-600 text-white py-3 rounded-xl shadow hover:bg-emerald-700 transition font-medium flex flex-col items-center justify-center gap-1 text-xs sm:text-sm"><i class="fas fa-gas-pump fa-lg"></i> Заправка</button>
+                <button onclick="openReminderModal()" class="bg-purple-600 text-white py-3 rounded-xl shadow hover:bg-purple-700 transition font-medium flex flex-col items-center justify-center gap-1 text-xs sm:text-sm"><i class="fas fa-plus-circle fa-lg"></i> Задача</button>
             </div>
 
             <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
@@ -717,12 +717,12 @@
                 
                 // ВАЖНО: Замените ВАШ_ЛОГИН и ВАШ_РЕПОЗИТОРИЙ на актуальные данные с GitHub
                 // Пример: https://cdn.jsdelivr.net/gh/Ivanov/car-logos@main/logos/bmw.com.png
-                const githubUrl = https://github.com/Gwynbleiddhuman/ServiceBook/tree/main/logofile/mazda.com.png;
+                const githubUrl = `https://cdn.jsdelivr.net/gh/ВАШ_ЛОГИН/ВАШ_РЕПОЗИТОРИЙ@main/logos/${brand}.png`;
                 
                 // Фолбэк: если вы забыли загрузить какую-то иконку на GitHub, скрипт попытается достать ее через Яндекс
-                const fallbackUrl = https://favicon.yandex.net/favicon/v2/https://${brand}?size=120;
+                const fallbackUrl = `https://favicon.yandex.net/favicon/v2/https://${brand}?size=120`;
 
-                logoContainer.innerHTML = 
+                logoContainer.innerHTML = `
                     <img src="${githubUrl}" 
                          class="w-12 h-12 object-contain transition-opacity duration-300" 
                          onerror="
@@ -735,7 +735,7 @@
                             }
                          ">
                     <i class="fas fa-car text-slate-300 text-2xl" style="display:none;"></i>
-                ;
+                `;
                 logoContainer.className = "bg-white p-2 rounded-full shadow-inner flex items-center justify-center w-16 h-16 shrink-0 border border-slate-50 transition-all overflow-hidden";
             } else {
 
