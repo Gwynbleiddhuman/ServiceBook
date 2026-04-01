@@ -716,9 +716,9 @@
                 const domain = appState.car.brandId;
 
 // Измененная цепочка без Clearbit (из-за блокировок adblock'ами и ограничений API)
-const srcGoogle = https://www.google.com/s2/favicons?domain=${domain}&sz=128;
-const srcYandex = https://favicon.yandex.net/favicon/v2/https://${domain}?size=120;
-const srcIconHorse = https://icon.horse/icon/${domain};
+const srcGoogle = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+const srcYandex = `https://favicon.yandex.net/favicon/v2/https://${domain}?size=120`;
+const srcIconHorse = `https://icon.horse/icon/${domain}`;
 
 logoContainer.innerHTML = 
     <img src="${srcGoogle}"
