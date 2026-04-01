@@ -713,26 +713,23 @@
 
                                     const logoContainer = document.getElementById('car-logo-container');
             if (appState.car.brandId) {
-                const brand = appState.car.brandId;
+                const domain = appState.car.brandId;
                 
-                // ВАЖНО: Замените ВАШ_ЛОГИН и ВАШ_РЕПОЗИТОРИЙ на актуальные данные с GitHub
-                // Пример: https://cdn.jsdelivr.net/gh/Ivanov/car-logos@main/logos/bmw.com.png
-                const githubUrl = `https://cdn.jsdelivr.net/gh/ВАШ_ЛОГИН/ВАШ_РЕПОЗИТОРИЙ@main/logos/${brand}.png`;
-                
-                // Фолбэк: если вы забыли загрузить какую-то иконку на GitHub, скрипт попытается достать ее через Яндекс
-                const fallbackUrl = `https://favicon.yandex.net/favicon/v2/https://${brand}?size=120`;
+                // Цепочка источников от самого красивого к самому надежному в РФ
+                const srcClearbit = `https://logo.clearbit.com/${domain}?size=256`;
+                const srcIconHorse = `https://icon.horse/icon/${domain}`;
+                const srcGoogle = `https://www.google.com/s2/favicons?domain=${domain}&sz=256`;
+                const srcYandex = `https://favicon.yandex.net/favicon/v2/https://${domain}?size=120`;
 
                 logoContainer.innerHTML = `
-                    <img src="${githubUrl}" 
+                    <img src="${srcClearbit}"
                          class="w-12 h-12 object-contain transition-opacity duration-300" 
+                         data-step="1"
                          onerror="
-                            if(!this.dataset.fallback) { 
-                                this.dataset.fallback = 'true'; 
-                                this.src = '${fallbackUrl}'; 
-                            } else { 
-                                this.style.display = 'none'; 
-                                this.nextElementSibling.style.display = 'block'; 
-                            }
+                            if(this.dataset.step == '1') { this.dataset.step = '2'; this.src = '${srcIconHorse}'; }
+                            else if(this.dataset.step == '2') { this.dataset.step = '3'; this.src = '${srcGoogle}'; }
+                            else if(this.dataset.step == '3') { this.dataset.step = '4'; this.src = '${srcYandex}'; }
+                            else { this.style.display = 'none'; this.nextElementSibling.style.display = 'block'; }
                          ">
                     <i class="fas fa-car text-slate-300 text-2xl" style="display:none;"></i>
                 `;
